@@ -106,4 +106,12 @@ export const ruleProviders: Record<string, RuleProvider> = {
         url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt",
         path: "./ruleset/GFWList.yaml",
     },
+    zer0direct: {
+        type: "http",
+        behavior: "domain",
+        format: "text",
+        interval: 86400,
+        url: "https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/ruleset/zer0direct.txt",
+        path: "./ruleset/zer0direct.txt",
+    },
 };

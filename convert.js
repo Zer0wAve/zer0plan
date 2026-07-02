@@ -571,6 +571,7 @@ https://github.com/powerfullz/override-rules
         `GEOSITE,microsoft,${PROXY_GROUPS.MICROSOFT}`,
         `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
+        `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
         `GEOIP,cn,DIRECT`,
         `MATCH,${PROXY_GROUPS.FINAL}`
@@ -688,6 +689,14 @@ https://github.com/powerfullz/override-rules
           interval: 86400,
           url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt",
           path: "./ruleset/GFWList.yaml"
+        },
+        zer0direct: {
+          type: "http",
+          behavior: "domain",
+          format: "text",
+          interval: 86400,
+          url: "https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/ruleset/zer0direct.txt",
+          path: "./ruleset/zer0direct.txt"
         }
       };
     }
