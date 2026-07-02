@@ -281,6 +281,7 @@ https://github.com/powerfullz/override-rules
     countryNodes,
     lowCostNodes,
     bkupNodes,
+    nonLandingNodes,
     landing,
     landingNodes,
     defaultProxies,
@@ -291,6 +292,7 @@ https://github.com/powerfullz/override-rules
   }) {
     const hasTW = countryNames.includes("台湾");
     const hasHK = countryNames.includes("香港");
+    const hasBkup = bkupNodes.length > 0;
     const groups = [
       // 1. 选择代理
       {
@@ -300,11 +302,20 @@ https://github.com/powerfullz/override-rules
         proxies: defaultSelector
       },
       // 2. 手动选择
-      {
+      regexFilter ? {
         name: PROXY_GROUPS.MANUAL,
         icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
         "include-all": true,
-        type: "select"
+        type: "select",
+        ...hasBkup ? { proxies: [PROXY_GROUPS.BKUP] } : {}
+      } : {
+        name: PROXY_GROUPS.MANUAL,
+        icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
+        type: "select",
+        proxies: [
+          ...nonLandingNodes.filter((n) => n.name && !/bkup/i.test(n.name)).map((n) => n.name).filter(isNotNull),
+          ...hasBkup ? [PROXY_GROUPS.BKUP] : []
+        ]
       },
       // 3. 自动选择
       {
@@ -322,7 +333,7 @@ https://github.com/powerfullz/override-rules
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
         type: "fallback",
         url: SPEEDTEST_URL,
-        proxies: defaultFallback,
+        proxies: [...defaultFallback, ...hasBkup ? [PROXY_GROUPS.BKUP] : []],
         interval: 60,
         tolerance: 20
       },
@@ -419,11 +430,14 @@ https://github.com/powerfullz/override-rules
         groupType,
         nodeSource: !regexFilter ? { proxies: lowCostNodes.map((node) => node.name).filter(isNotNull) } : { "include-all": true, filter: LOW_COST_NODE_MATCHER.pattern }
       }) : null,
-      // 15b. 备用节点 (conditional)
+      // 15b. 备用节点 (conditional, url-test)
       bkupNodes.length > 0 ? {
         name: PROXY_GROUPS.BKUP,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
-        type: "select",
+        type: "url-test",
+        url: SPEEDTEST_URL,
+        interval: 60,
+        tolerance: 20,
         proxies: bkupNodes.map((node) => node.name).filter(isNotNull)
       } : null,
       // 16. E-Hentai
@@ -594,14 +608,6 @@ https://github.com/powerfullz/override-rules
           url: `${CDN_URL}/gh/217heidai/adblockfilters@main/rules/adblockmihomolite.yaml`,
           path: "./ruleset/ADBlock.yaml"
         },
-        SogouInput: {
-          type: "http",
-          behavior: "classical",
-          format: "text",
-          interval: 86400,
-          url: "https://ruleset.skk.moe/Clash/non_ip/sogouinput.txt",
-          path: "./ruleset/SogouInput.txt"
-        },
         StaticResources: {
           type: "http",
           behavior: "domain",
@@ -673,14 +679,6 @@ https://github.com/powerfullz/override-rules
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/Crypto.list`,
           path: "./ruleset/Crypto.list"
-        },
-        Weibo: {
-          type: "http",
-          behavior: "classical",
-          format: "text",
-          interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/Weibo.list`,
-          path: "./ruleset/Weibo.list"
         },
         GFWList: {
           type: "http",
@@ -826,8 +824,7 @@ https://github.com/powerfullz/override-rules
     );
     const defaultFallback = buildList(
       landing && PROXY_GROUPS.LANDING,
-      suffixedCountryNames,
-      bkup && PROXY_GROUPS.BKUP
+      suffixedCountryNames
     );
     const frontProxySelector = buildList(
       suffixedCountryNames,
@@ -919,6 +916,7 @@ https://github.com/powerfullz/override-rules
           countryNodes,
           lowCostNodes,
           bkupNodes,
+          nonLandingNodes,
           landing,
           landingNodes,
           defaultProxies,

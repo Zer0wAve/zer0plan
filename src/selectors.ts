@@ -54,8 +54,7 @@ export function buildBaseLists({
 
     const defaultFallback = buildList(
         landing && PROXY_GROUPS.LANDING,
-        suffixedCountryNames,
-        bkup && PROXY_GROUPS.BKUP
+        suffixedCountryNames
     );
 
     const frontProxySelector = buildList(

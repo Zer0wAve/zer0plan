@@ -56,6 +56,7 @@ export function buildProxyGroups({
     countryNodes,
     lowCostNodes,
     bkupNodes,
+    nonLandingNodes,
     landing,
     landingNodes,
     defaultProxies,
@@ -66,6 +67,7 @@ export function buildProxyGroups({
 }: BuildProxyGroupsInput): ProxyGroup[] {
     const hasTW = countryNames.includes("台湾");
     const hasHK = countryNames.includes("香港");
+    const hasBkup = bkupNodes.length > 0;
     const groups: Array<ProxyGroup | null> = [
         // 1. 选择代理
         {
@@ -75,12 +77,26 @@ export function buildProxyGroups({
             proxies: defaultSelector,
         },
         // 2. 手动选择
-        {
-            name: PROXY_GROUPS.MANUAL,
-            icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
-            "include-all": true,
-            type: "select",
-        },
+        regexFilter
+            ? {
+                  name: PROXY_GROUPS.MANUAL,
+                  icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
+                  "include-all": true,
+                  type: "select",
+                  ...(hasBkup ? { proxies: [PROXY_GROUPS.BKUP] } : {}),
+              }
+            : {
+                  name: PROXY_GROUPS.MANUAL,
+                  icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
+                  type: "select",
+                  proxies: [
+                      ...nonLandingNodes
+                          .filter((n) => n.name && !/bkup/i.test(n.name))
+                          .map((n) => n.name!)
+                          .filter(isNotNull),
+                      ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
+                  ],
+              },
         // 3. 自动选择
         {
             name: PROXY_GROUPS.AUTO,
@@ -97,7 +113,7 @@ export function buildProxyGroups({
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
             type: "fallback",
             url: SPEEDTEST_URL,
-            proxies: defaultFallback,
+            proxies: [...defaultFallback, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
             interval: 60,
             tolerance: 20,
         },
@@ -204,12 +220,15 @@ export function buildProxyGroups({
                       : { "include-all": true as const, filter: LOW_COST_NODE_MATCHER.pattern },
               })
             : null,
-        // 15b. 备用节点 (conditional)
+        // 15b. 备用节点 (conditional, url-test)
         bkupNodes.length > 0
             ? {
                   name: PROXY_GROUPS.BKUP,
                   icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
-                  type: "select",
+                  type: "url-test",
+                  url: SPEEDTEST_URL,
+                  interval: 60,
+                  tolerance: 20,
                   proxies: bkupNodes.map((node) => node.name).filter(isNotNull),
               }
             : null,

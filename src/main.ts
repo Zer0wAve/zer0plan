@@ -100,6 +100,7 @@ function main(config: ClashConfig): ClashConfig {
         countryNodes,
         lowCostNodes,
         bkupNodes,
+        nonLandingNodes,
         landing,
         landingNodes,
         defaultProxies,
