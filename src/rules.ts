@@ -2,13 +2,14 @@ import { PROXY_GROUPS } from "./constants";
 
 const baseRules = [
     `GEOIP,private,DIRECT,no-resolve`,
+    `RULE-SET,zer0direct,DIRECT`,
     `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
     `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
     `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
     `GEOSITE,category-ai-!cn,${PROXY_GROUPS.AI_SERVICE}`,
-    `GEOSITE,bilibili,${PROXY_GROUPS.BILIBILI}`,
+    `RULE-SET,BiliIntl,${PROXY_GROUPS.BILIBILI}`,
     `GEOSITE,youtube,${PROXY_GROUPS.VIDEO}`,
     `GEOSITE,telegram,${PROXY_GROUPS.SELECT}`,
     `GEOIP,telegram,${PROXY_GROUPS.SELECT},no-resolve`,
@@ -29,7 +30,6 @@ const baseRules = [
     `GEOSITE,microsoft,${PROXY_GROUPS.MICROSOFT}`,
     `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
     `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
-    `RULE-SET,zer0direct,DIRECT`,
     `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
     `GEOIP,cn,DIRECT`,
     `MATCH,${PROXY_GROUPS.FINAL}`,

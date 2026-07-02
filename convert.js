@@ -558,13 +558,14 @@ https://github.com/powerfullz/override-rules
       init_constants();
       baseRules = [
         `GEOIP,private,DIRECT,no-resolve`,
+        `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
         `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
         `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `GEOSITE,category-ai-!cn,${PROXY_GROUPS.AI_SERVICE}`,
-        `GEOSITE,bilibili,${PROXY_GROUPS.BILIBILI}`,
+        `RULE-SET,BiliIntl,${PROXY_GROUPS.BILIBILI}`,
         `GEOSITE,youtube,${PROXY_GROUPS.VIDEO}`,
         `GEOSITE,telegram,${PROXY_GROUPS.SELECT}`,
         `GEOIP,telegram,${PROXY_GROUPS.SELECT},no-resolve`,
@@ -585,7 +586,6 @@ https://github.com/powerfullz/override-rules
         `GEOSITE,microsoft,${PROXY_GROUPS.MICROSOFT}`,
         `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
-        `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
         `GEOIP,cn,DIRECT`,
         `MATCH,${PROXY_GROUPS.FINAL}`
@@ -695,6 +695,14 @@ https://github.com/powerfullz/override-rules
           interval: 86400,
           url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt`,
           path: "./ruleset/zer0direct.txt"
+        },
+        BiliIntl: {
+          type: "http",
+          behavior: "domain",
+          format: "text",
+          interval: 86400,
+          url: `${CDN_URL}/gh/xishang0128/rules@main/biliintl.list`,
+          path: "./ruleset/BiliIntl.list"
         }
       };
     }
