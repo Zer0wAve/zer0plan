@@ -76,27 +76,19 @@ export function buildProxyGroups({
             type: "select",
             proxies: defaultSelector,
         },
-        // 2. 手动选择
-        regexFilter
-            ? {
-                  name: PROXY_GROUPS.MANUAL,
-                  icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
-                  "include-all": true,
-                  type: "select",
-                  ...(hasBkup ? { proxies: [PROXY_GROUPS.BKUP] } : {}),
-              }
-            : {
-                  name: PROXY_GROUPS.MANUAL,
-                  icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
-                  type: "select",
-                  proxies: [
-                      ...nonLandingNodes
-                          .filter((n) => n.name && !/bkup/i.test(n.name))
-                          .map((n) => n.name!)
-                          .filter(isNotNull),
-                      ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
-                  ],
-              },
+        // 2. 手动选择（排除bkup节点，加bkup组入口）
+        {
+            name: PROXY_GROUPS.MANUAL,
+            icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
+            type: "select",
+            proxies: [
+                ...nonLandingNodes
+                    .filter((n) => n.name && !/bkup/i.test(n.name))
+                    .map((n) => n.name!)
+                    .filter(isNotNull),
+                ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
+            ],
+        },
         // 3. 自动选择
         {
             name: PROXY_GROUPS.AUTO,

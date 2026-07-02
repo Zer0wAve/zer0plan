@@ -301,14 +301,8 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: defaultSelector
       },
-      // 2. 手动选择
-      regexFilter ? {
-        name: PROXY_GROUPS.MANUAL,
-        icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
-        "include-all": true,
-        type: "select",
-        ...hasBkup ? { proxies: [PROXY_GROUPS.BKUP] } : {}
-      } : {
+      // 2. 手动选择（排除bkup节点，加bkup组入口）
+      {
         name: PROXY_GROUPS.MANUAL,
         icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
         type: "select",
