@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "lib": ["ES2025", "DOM"]
+  },
+  "include": ["src/**/*.ts", "scripts/yaml_generator/**/*.ts"]
+}

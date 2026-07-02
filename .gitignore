@@ -1,0 +1,5 @@
+node_modules/
+convert.js
+convert.min.js
+dist/
+*.log
