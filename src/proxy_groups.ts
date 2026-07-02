@@ -55,6 +55,7 @@ export function buildProxyGroups({
     countryNames,
     countryNodes,
     lowCostNodes,
+    bkupNodes,
     landing,
     landingNodes,
     defaultProxies,
@@ -202,6 +203,15 @@ export function buildProxyGroups({
                       ? { proxies: lowCostNodes.map((node) => node.name).filter(isNotNull) }
                       : { "include-all": true as const, filter: LOW_COST_NODE_MATCHER.pattern },
               })
+            : null,
+        // 15b. 备用节点 (conditional)
+        bkupNodes.length > 0
+            ? {
+                  name: PROXY_GROUPS.BKUP,
+                  icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
+                  type: "select",
+                  proxies: bkupNodes.map((node) => node.name).filter(isNotNull),
+              }
             : null,
         // 16. E-Hentai
         {

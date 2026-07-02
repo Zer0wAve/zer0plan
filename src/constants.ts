@@ -25,6 +25,7 @@ export const PROXY_GROUPS = {
     GITHUB: "Github",
     VIDEO: "Video",
     LOW_COST: "低倍率节点",
+    BKUP: "bkup",
     EHENTAI: "E-Hentai",
     AD_BLOCK: "广告拦截",
     GLOBAL: "GLOBAL",

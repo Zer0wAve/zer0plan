@@ -192,6 +192,7 @@ export interface BaseLists {
 export interface BuildBaseListsInput {
     landing: boolean;
     lowCostNodes: ProxyNode[];
+    bkupNodes: ProxyNode[];
     countryNames: string[];
     nonLandingNodes: ProxyNode[];
     regexFilter: boolean;
@@ -203,6 +204,7 @@ export interface BuildProxyGroupsInput {
     countryNames: string[];
     countryNodes: Record<string, ProxyNode[]>;
     lowCostNodes: ProxyNode[];
+    bkupNodes: ProxyNode[];
     landing: boolean;
     landingNodes: ProxyNode[];
     defaultProxies: string[];

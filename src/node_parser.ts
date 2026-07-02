@@ -23,6 +23,30 @@ export function parseLowCost(nodes: ProxyNode[]): ProxyNode[] {
 }
 
 /**
+ * 从节点列表中筛选出名称包含 "bkup" 的备用节点，其余为活跃节点。
+ * 备用节点不参与国家分组，作为独立的 bkup 代理组存在。
+ * @param nodes - 节点数组
+ * @returns 包含 `bkupNodes`（备用节点）和 `activeNodes`（活跃节点）
+ */
+export function parseBkupNodes(nodes: ProxyNode[]): {
+    bkupNodes: ProxyNode[];
+    activeNodes: ProxyNode[];
+} {
+    const bkupNodes: ProxyNode[] = [];
+    const activeNodes: ProxyNode[] = [];
+
+    for (const node of nodes || []) {
+        if (node.name && /bkup/i.test(node.name)) {
+            bkupNodes.push(node);
+        } else {
+            activeNodes.push(node);
+        }
+    }
+
+    return { bkupNodes, activeNodes };
+}
+
+/**
  * 根据 dialer-proxy 字段将节点分为落地节点和非落地节点。
  * 在 Mihomo 链式代理中，`dialer-proxy` 表示当前节点通过指定代理拨号。
  * 因此带 `dialer-proxy: "前置代理"` 的节点是落地节点（目标节点），其余为非落地节点。
