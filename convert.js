@@ -695,7 +695,7 @@ https://github.com/powerfullz/override-rules
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: "https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/ruleset/zer0direct.txt",
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt`,
           path: "./ruleset/zer0direct.txt"
         }
       };
