@@ -1,0 +1,22 @@
+# zer0tailscale — Tailscale Homeland 覆写
+# 在 Stash/Clash Party 的 SubStore 中作为额外覆写使用
+# 运行顺序：先跑主 override JS，再跑此 YAML
+
+# 在 proxies 最前面插入 Tailscale 节点
++proxies:
+  - name: Homesweethome
+    type: tailscale
+    auth-key: ""
+    ephemeral: false
+
+# 新增 Homeland 代理组（隐藏，手动选择 Tailscale）
++proxy-groups:
+  - name: Homeland
+    type: select
+    proxies:
+      - Homesweethome
+    hidden: true
+
+# 在 rules 末尾追加局域网直连规则
+rules+:
+  - IP-CIDR,192.168.0.0/24,Homeland
