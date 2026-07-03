@@ -1,4 +1,4 @@
-# zer0tailscale — Tailscale Homeland 覆写
+# zer0extras — 手机端额外覆写（Tailscale / MITM / 等）
 # 在 Stash/Clash Party 的 SubStore 中作为额外覆写使用
 # 运行顺序：先跑主 override JS，再跑此 YAML
 
