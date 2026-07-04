@@ -620,7 +620,7 @@ https://github.com/powerfullz/override-rules
         },
         TikTok: {
           type: "http",
-          behavior: "classical",
+          behavior: "domain",
           format: "text",
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/TikTok.list`,
@@ -636,7 +636,7 @@ https://github.com/powerfullz/override-rules
         },
         SteamFix: {
           type: "http",
-          behavior: "classical",
+          behavior: "domain",
           format: "text",
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/SteamFix.list`,
@@ -652,7 +652,7 @@ https://github.com/powerfullz/override-rules
         },
         AdditionalFilter: {
           type: "http",
-          behavior: "classical",
+          behavior: "domain",
           format: "text",
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalFilter.list`,
@@ -660,7 +660,7 @@ https://github.com/powerfullz/override-rules
         },
         AdditionalCDNResources: {
           type: "http",
-          behavior: "classical",
+          behavior: "domain",
           format: "text",
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalCDNResources.list`,
@@ -668,7 +668,7 @@ https://github.com/powerfullz/override-rules
         },
         Crypto: {
           type: "http",
-          behavior: "classical",
+          behavior: "domain",
           format: "text",
           interval: 86400,
           url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/Crypto.list`,
@@ -709,16 +709,13 @@ https://github.com/powerfullz/override-rules
       ipv6: ipv6Enabled,
       "prefer-h3": true,
       "enhanced-mode": mode,
-      "default-nameserver": ["119.29.29.29", "223.5.5.5"],
-      nameserver: ["system", "223.5.5.5", "119.29.29.29", "180.184.1.1"],
+      "default-nameserver": ["223.5.5.5", "119.29.29.29"],
+      nameserver: ["223.5.5.5", "119.29.29.29", "system"],
       fallback: [
-        "quic://dns0.eu",
         "https://dns.cloudflare.com/dns-query",
-        "https://dns.sb/dns-query",
-        "tcp://208.67.222.222",
-        "tcp://8.26.56.2"
+        "https://dns.google/dns-query"
       ],
-      "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "tls://dot.pub"]
+      "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "https://doh.pub/dns-query"]
     };
     if (fakeIpFilter) {
       config["fake-ip-filter"] = fakeIpFilter;

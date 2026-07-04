@@ -28,7 +28,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     },
     TikTok: {
         type: "http",
-        behavior: "classical",
+        behavior: "domain",
         format: "text",
         interval: 86400,
         url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/TikTok.list`,
@@ -44,7 +44,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     },
     SteamFix: {
         type: "http",
-        behavior: "classical",
+        behavior: "domain",
         format: "text",
         interval: 86400,
         url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/SteamFix.list`,
@@ -60,7 +60,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     },
     AdditionalFilter: {
         type: "http",
-        behavior: "classical",
+        behavior: "domain",
         format: "text",
         interval: 86400,
         url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalFilter.list`,
@@ -68,7 +68,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     },
     AdditionalCDNResources: {
         type: "http",
-        behavior: "classical",
+        behavior: "domain",
         format: "text",
         interval: 86400,
         url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalCDNResources.list`,
@@ -76,7 +76,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     },
     Crypto: {
         type: "http",
-        behavior: "classical",
+        behavior: "domain",
         format: "text",
         interval: 86400,
         url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/Crypto.list`,
