@@ -22,6 +22,14 @@ https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/convert.min.js
 https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt
 ```
 
+### zer0extras 手机端额外覆写（DNS / Tailscale / MITM 等）
+
+```
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
+```
+
+运行顺序：先跑 SubStore 覆写脚本，再跑此 YAML。
+
 ## 与上游的区别
 
 - **Video 统一组** — YouTube / Netflix / Twitch / Bahamut / PikPak / TikTok 合并到 `Video`
