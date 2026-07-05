@@ -24,6 +24,12 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt
 
 ### zer0extras 手机端额外覆写（DNS / Tailscale / MITM 等）
 
+GitHub Raw（实时，需代理）：
+```
+https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/zer0extras.yaml
+```
+
+jsdelivr CDN（国内可用，有缓存）：
 ```
 https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 ```
