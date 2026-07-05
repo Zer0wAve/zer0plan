@@ -1,6 +1,6 @@
 # zer0extras — 手机端综合覆写（DNS / Tailscale / MITM / 等）
 # 在 Stash/Clash Party 的 SubStore 中作为额外覆写使用
-# 运行顺序：先跑主 override JS（convert.min.js），再跑此 YAML
+# 运行顺序：先跑主 override JS（zer0plan.min.js），再跑此 YAML
 # jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 
 # ===== DNS 配置（简化版，符合 Stash 高效配置建议）=====

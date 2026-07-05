@@ -8,12 +8,11 @@ SubStore 订阅转换脚本，基于 [powerfullz/override-rules](https://github.
 
 jsdelivr CDN（国内可用，有缓存）：
 ```
-https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/convert.min.js
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0plan.min.js
 ```
-
 GitHub Raw（实时，需代理）：
 ```
-https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/convert.min.js
+https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/zer0plan.min.js
 ```
 
 ### zer0direct 规则集（直连白名单）
@@ -61,5 +60,5 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 ```bash
 npm install
 npm run build
-# 产物: convert.js / convert.min.js
+# 产物: zer0plan.js / zer0plan.min.js
 ```
