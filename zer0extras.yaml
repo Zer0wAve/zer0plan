@@ -39,4 +39,4 @@
 
 # ===== 在 rules 头部追加局域网直连规则 =====
 +rules:
-  - IP-CIDR,192.168.0.0/24,Homeland
+  - IP-CIDR,192.168.0.0/16,Homeland
