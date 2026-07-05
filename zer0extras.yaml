@@ -25,6 +25,9 @@
     type: tailscale
     auth-key: ""
     ephemeral: false
+    benchmark-url: http://192.168.0.1
+    benchmark-timeout: 5
+    benchmark-disabled: false
 
 # ===== 新增 Homeland 代理组（隐藏，手动选择 Tailscale）=====
 +proxy-groups:
