@@ -40,4 +40,5 @@
 # ===== 在 rules 头部追加局域网直连规则 =====
 +rules:
   - DOMAIN,hen-avior.ts.net,Homeland
+  - IP-CIDR,100.64.0.0/10,Homeland
   - IP-CIDR,192.168.0.0/16,Homeland
