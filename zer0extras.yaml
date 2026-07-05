@@ -49,6 +49,6 @@ rule-providers:
       - Homesweethome
     hidden: true
 
-# ===== 在 rules 末尾追加局域网直连规则 =====
-rules+:
+# ===== 在 rules 头部追加局域网直连规则 =====
++rules:
   - IP-CIDR,192.168.0.0/24,Homeland
