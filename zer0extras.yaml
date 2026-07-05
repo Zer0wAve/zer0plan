@@ -3,21 +3,21 @@
 # 运行顺序：先跑主 override JS（zer0plan.min.js），再跑此 YAML
 # jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 
-# ===== DNS 配置（简化版，符合 Stash 高效配置建议）=====
-dns:
-  default-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-  nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-    - system
-  fallback:
-    - https://dns.cloudflare.com/dns-query
-    - https://dns.google/dns-query
-  proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
+# ===== DNS 配置（暂时注释，用 zer0plan.js 自带的）=====
+# dns:
+#   default-nameserver:
+#     - 223.5.5.5
+#     - 119.29.29.29
+#   nameserver:
+#     - 223.5.5.5
+#     - 119.29.29.29
+#     - system
+#   fallback:
+#     - https://dns.cloudflare.com/dns-query
+#     - https://dns.google/dns-query
+#   proxy-server-nameserver:
+#     - https://dns.alidns.com/dns-query
+#     - https://doh.pub/dns-query
 
 # ===== 在 proxies 最前面插入 Tailscale 节点 =====
 +proxies:
