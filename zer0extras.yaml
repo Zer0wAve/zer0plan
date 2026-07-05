@@ -19,21 +19,6 @@ dns:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
 
-# ===== 规则集覆写（classical → domain 优化内存）=====
-# Crypto/TikTok/SteamFix/AdditionalFilter/AdditionalCDNResources 改为 domain 行为
-# 注意：上游源文件仍是 classical 格式，若 Stash 不兼容需回退
-rule-providers:
-  Crypto:
-    behavior: domain
-  TikTok:
-    behavior: domain
-  SteamFix:
-    behavior: domain
-  AdditionalFilter:
-    behavior: domain
-  AdditionalCDNResources:
-    behavior: domain
-
 # ===== 在 proxies 最前面插入 Tailscale 节点 =====
 +proxies:
   - name: Homesweethome
