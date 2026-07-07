@@ -93,7 +93,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     zer0direct: {
         type: "http",
         behavior: "domain",
-        format: "text",
+        format: "yaml",
         interval: 86400,
         url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt`,
         path: "./ruleset/zer0direct.txt",
@@ -101,7 +101,7 @@ export const ruleProviders: Record<string, RuleProvider> = {
     zer0proxy: {
         type: "http",
         behavior: "domain",
-        format: "text",
+        format: "yaml",
         interval: 86400,
         url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0proxy.txt`,
         path: "./ruleset/zer0proxy.txt",
