@@ -540,6 +540,9 @@ https://github.com/powerfullz/override-rules
   // src/rules.ts
   function buildRules({ quicEnabled }) {
     const ruleList = [...baseRules];
+    if (!quicEnabled) {
+      ruleList.unshift("AND,((DST-PORT,443),(NETWORK,UDP)),REJECT");
+    }
     return ruleList;
   }
   var baseRules;
