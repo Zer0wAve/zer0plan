@@ -3,6 +3,7 @@ import { PROXY_GROUPS } from "./constants";
 const baseRules = [
     `GEOIP,private,DIRECT,no-resolve`,
     `RULE-SET,zer0direct,DIRECT`,
+    `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
     `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
@@ -30,7 +31,6 @@ const baseRules = [
     `GEOSITE,microsoft,${PROXY_GROUPS.MICROSOFT}`,
     `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
     `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
-    `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
     `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
     `GEOIP,cn,DIRECT`,
     `MATCH,${PROXY_GROUPS.FINAL}`,
