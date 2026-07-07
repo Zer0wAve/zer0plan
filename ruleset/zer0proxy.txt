@@ -1,1 +1,2 @@
 tabbitbrowser.com
+releases.tabbitbrowser.com
