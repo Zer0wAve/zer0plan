@@ -577,6 +577,7 @@ https://github.com/powerfullz/override-rules
         `GEOSITE,microsoft,${PROXY_GROUPS.MICROSOFT}`,
         `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
+        `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
         `GEOIP,cn,DIRECT`,
         `MATCH,${PROXY_GROUPS.FINAL}`
@@ -686,6 +687,14 @@ https://github.com/powerfullz/override-rules
           interval: 86400,
           url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt`,
           path: "./ruleset/zer0direct.txt"
+        },
+        zer0proxy: {
+          type: "http",
+          behavior: "domain",
+          format: "text",
+          interval: 86400,
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0proxy.txt`,
+          path: "./ruleset/zer0proxy.txt"
         },
         BiliIntl: {
           type: "http",

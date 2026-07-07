@@ -98,6 +98,14 @@ export const ruleProviders: Record<string, RuleProvider> = {
         url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt`,
         path: "./ruleset/zer0direct.txt",
     },
+    zer0proxy: {
+        type: "http",
+        behavior: "domain",
+        format: "text",
+        interval: 86400,
+        url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/zer0proxy.txt`,
+        path: "./ruleset/zer0proxy.txt",
+    },
     BiliIntl: {
         type: "http",
         behavior: "domain",
