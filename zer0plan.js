@@ -551,7 +551,6 @@ https://github.com/powerfullz/override-rules
       "use strict";
       init_constants();
       baseRules = [
-        `GEOIP,private,DIRECT,no-resolve`,
         `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
@@ -582,6 +581,7 @@ https://github.com/powerfullz/override-rules
         `GEOSITE,google,${PROXY_GROUPS.GOOGLE}`,
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
+        `GEOIP,private,DIRECT,no-resolve`,
         `GEOIP,cn,DIRECT`,
         `MATCH,${PROXY_GROUPS.FINAL}`
       ];
