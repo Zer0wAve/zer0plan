@@ -621,8 +621,8 @@ https://github.com/powerfullz/override-rules
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/TikTok.list`,
-          path: "./ruleset/TikTok.list"
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/converted/TikTok.txt`,
+          path: "./ruleset/converted/TikTok.txt"
         },
         EHentai: {
           type: "http",
@@ -637,8 +637,8 @@ https://github.com/powerfullz/override-rules
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/SteamFix.list`,
-          path: "./ruleset/SteamFix.list"
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/converted/SteamFix.txt`,
+          path: "./ruleset/converted/SteamFix.txt"
         },
         GoogleFCM: {
           type: "http",
@@ -653,24 +653,24 @@ https://github.com/powerfullz/override-rules
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalFilter.list`,
-          path: "./ruleset/AdditionalFilter.list"
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/converted/AdditionalFilter.txt`,
+          path: "./ruleset/converted/AdditionalFilter.txt"
         },
         AdditionalCDNResources: {
           type: "http",
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/AdditionalCDNResources.list`,
-          path: "./ruleset/AdditionalCDNResources.list"
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/converted/AdditionalCDNResources.txt`,
+          path: "./ruleset/converted/AdditionalCDNResources.txt"
         },
         Crypto: {
           type: "http",
           behavior: "domain",
           format: "text",
           interval: 86400,
-          url: `${CDN_URL}/gh/powerfullz/override-rules@master/ruleset/Crypto.list`,
-          path: "./ruleset/Crypto.list"
+          url: `${CDN_URL}/gh/Zer0wAve/zer0plan@main/ruleset/converted/Crypto.txt`,
+          path: "./ruleset/converted/Crypto.txt"
         },
         GFWList: {
           type: "http",
