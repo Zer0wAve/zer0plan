@@ -1,0 +1,31 @@
+name: Backup Upstream Rulesets
+
+on:
+  schedule:
+    # every Monday at 08:00 UTC (16:00 CST)
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Backup upstream rulesets
+        run: python3 scripts/backup_rulesets.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backup/
+          if git diff --cached --quiet; then
+            echo "No changes, skipping commit."
+          else
+            git commit -m "chore: weekly backup of upstream rulesets"
+            git push
+          fi
