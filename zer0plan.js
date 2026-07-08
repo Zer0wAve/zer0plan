@@ -545,9 +545,6 @@ https://github.com/powerfullz/override-rules
   // src/rules.ts
   function buildRules({ quicEnabled }) {
     const ruleList = [...baseRules];
-    if (!quicEnabled) {
-      ruleList.unshift("AND,((DST-PORT,443),(NETWORK,UDP)),REJECT");
-    }
     ruleList.unshift(
       "PROCESS-NAME,v2ray,DIRECT",
       "PROCESS-NAME,Surge,DIRECT",
@@ -986,14 +983,14 @@ https://github.com/powerfullz/override-rules
             "disable-keep-alive": !keepAliveEnabled,
             profile: { "store-selected": true }
           },
-          "proxy-groups": proxyGroups,
-          "rule-providers": ruleProviders,
           rules: finalRules,
           sniffer: snifferConfig,
           dns: buildDns({ fakeIPEnabled, ipv6Enabled }),
           tun: buildTunConfig(tunEnabled),
           "geodata-mode": true,
           "geox-url": geoxURL,
+          "proxy-groups": proxyGroups,
+          "rule-providers": ruleProviders,
           proxies: config.proxies
         };
       }

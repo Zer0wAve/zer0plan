@@ -45,9 +45,6 @@ const baseRules = [
  */
 export function buildRules({ quicEnabled }: { quicEnabled: boolean }): string[] {
     const ruleList = [...baseRules];
-    if (!quicEnabled) {
-        ruleList.unshift("AND,((DST-PORT,443),(NETWORK,UDP)),REJECT");
-    }
     // 进程直连规则（防代理环路 + 下载工具直连，桌面 mihomo 生效）
     ruleList.unshift(
         "PROCESS-NAME,v2ray,DIRECT",

@@ -140,14 +140,14 @@ function main(config: ClashConfig): ClashConfig {
             "disable-keep-alive": !keepAliveEnabled,
             profile: { "store-selected": true },
         }),
-        "proxy-groups": proxyGroups,
-        "rule-providers": ruleProviders,
         rules: finalRules,
         sniffer: snifferConfig,
         dns: buildDns({ fakeIPEnabled, ipv6Enabled }),
         tun: buildTunConfig(tunEnabled),
         "geodata-mode": true,
         "geox-url": geoxURL,
+        "proxy-groups": proxyGroups,
+        "rule-providers": ruleProviders,
         proxies: config.proxies,
     };
 }
