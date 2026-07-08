@@ -259,6 +259,7 @@ https://github.com/powerfullz/override-rules
           url: SPEEDTEST_URL,
           interval: 60,
           tolerance: 20,
+          lazy: true,
           ...nodeSource
         };
       case 2:
@@ -270,6 +271,7 @@ https://github.com/powerfullz/override-rules
           url: SPEEDTEST_URL,
           interval: 60,
           tolerance: 20,
+          lazy: true,
           ...nodeSource
         };
     }
@@ -319,7 +321,8 @@ https://github.com/powerfullz/override-rules
         url: SPEEDTEST_URL,
         proxies: defaultFallback,
         interval: 60,
-        tolerance: 20
+        tolerance: 20,
+        lazy: true
       },
       // 4. 故障转移
       {
@@ -329,7 +332,8 @@ https://github.com/powerfullz/override-rules
         url: SPEEDTEST_URL,
         proxies: [...defaultFallback, ...hasBkup ? [PROXY_GROUPS.BKUP] : []],
         interval: 60,
-        tolerance: 20
+        tolerance: 20,
+        lazy: true
       },
       // 5. AI服务
       {
@@ -432,6 +436,7 @@ https://github.com/powerfullz/override-rules
         url: SPEEDTEST_URL,
         interval: 60,
         tolerance: 20,
+        lazy: true,
         proxies: bkupNodes.map((node) => node.name).filter(isNotNull)
       } : null,
       // 16. E-Hentai

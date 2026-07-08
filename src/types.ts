@@ -44,6 +44,7 @@ export interface BaseProxyGroup {
     "include-all"?: boolean;
     filter?: string;
     "exclude-filter"?: string;
+    lazy?: boolean;
 }
 
 export interface SelectProxyGroup extends BaseProxyGroup {
