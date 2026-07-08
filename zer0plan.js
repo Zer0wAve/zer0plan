@@ -719,7 +719,7 @@ https://github.com/powerfullz/override-rules
       "prefer-h3": true,
       "enhanced-mode": mode,
       "default-nameserver": ["223.5.5.5", "119.29.29.29"],
-      nameserver: ["223.5.5.5", "119.29.29.29", "system"],
+      nameserver: ["223.5.5.5", "119.29.29.29"],
       fallback: [
         "https://dns.cloudflare.com/dns-query",
         "https://dns.google/dns-query"
@@ -943,7 +943,6 @@ https://github.com/powerfullz/override-rules
         });
         const finalRules = buildRules({ quicEnabled });
         return {
-          proxies: config.proxies,
           ...fullConfig && {
             "mixed-port": 7890,
             "redir-port": 7892,
@@ -969,7 +968,8 @@ https://github.com/powerfullz/override-rules
           dns: buildDns({ fakeIPEnabled, ipv6Enabled }),
           tun: buildTunConfig(tunEnabled),
           "geodata-mode": true,
-          "geox-url": geoxURL
+          "geox-url": geoxURL,
+          proxies: config.proxies
         };
       }
       globalThis.main = main;

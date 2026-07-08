@@ -60,7 +60,7 @@ function buildDnsConfig({ mode, ipv6Enabled, fakeIpFilter }: BuildDnsConfigInput
         "prefer-h3": true,
         "enhanced-mode": mode,
         "default-nameserver": ["223.5.5.5", "119.29.29.29"],
-        nameserver: ["223.5.5.5", "119.29.29.29", "system"],
+        nameserver: ["223.5.5.5", "119.29.29.29"],
         fallback: [
             "https://dns.cloudflare.com/dns-query",
             "https://dns.google/dns-query",

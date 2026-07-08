@@ -3,6 +3,10 @@
 # 运行顺序：先跑主 override JS（zer0plan.min.js），再跑此 YAML
 # jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 
+# ===== 基础设置 =====
+mode: rule
+log-level: warning
+
 # ===== DNS 配置（暂时注释，用 zer0plan.js 自带的）=====
 # dns:
 #   default-nameserver:

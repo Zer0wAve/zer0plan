@@ -122,7 +122,6 @@ function main(config: ClashConfig): ClashConfig {
     const finalRules = buildRules({ quicEnabled });
 
     return {
-        proxies: config.proxies,
         ...(fullConfig && {
             "mixed-port": 7890,
             "redir-port": 7892,
@@ -149,6 +148,7 @@ function main(config: ClashConfig): ClashConfig {
         tun: buildTunConfig(tunEnabled),
         "geodata-mode": true,
         "geox-url": geoxURL,
+        proxies: config.proxies,
     };
 }
 
