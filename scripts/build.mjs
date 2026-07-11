@@ -17,11 +17,11 @@ const commonOptions = {
 };
 
 Promise.all([
-    esbuild.build({ ...commonOptions, outfile: "zer0plan.js" }),
+    esbuild.build({ ...commonOptions, outfile: "mainline.js" }),
     esbuild.build({
         ...commonOptions,
         minify: true,
-        outfile: "zer0plan.min.js",
+        outfile: "mainline.min.js",
         drop: ["debugger"],
     }),
 ]).catch((err) => {

@@ -8,42 +8,42 @@ SubStore 订阅转换脚本，基于 [powerfullz/override-rules](https://github.
 
 GitHub Raw（实时，需代理）：
 ```
-https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/zer0plan.min.js
+https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/mainline.min.js
 ```
 
 jsdelivr CDN（国内可用，有缓存）：
 ```
-https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0plan.min.js
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/mainline.min.js
 ```
 
 ### zer0direct 规则集（直连白名单）
 
 ```
-https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.txt
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/ruleset/zer0direct.yaml
 ```
 
-### zer0extras 手机端额外覆写（DNS / Tailscale / MITM 等）
+### iosextra 手机端额外覆写（DNS / Tailscale / MITM 等）
 
 GitHub Raw（实时，需代理）：
 ```
-https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/zer0extras.yaml
+https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/iosextra.yaml
 ```
 
 jsdelivr CDN（国内可用，有缓存）：
 ```
-https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/iosextra.yaml
 ```
 
-运行顺序：先跑 SubStore 覆写脚本，再跑此 YAML。
+运行顺序：先跑 SubStore 覆写脚本（mainline.min.js），再跑此 YAML（iosextra.yaml）。
 
 ## 与上游的区别
 
-- **Video 统一组** — YouTube / Netflix / Twitch / Bahamut / PikPak / TikTok 合并到 `Video`
-- **选择代理 统一组** — Telegram / Twitter / Crypto / GFWList 合并到 `选择代理`
-- **bkup 节点过滤** — 名称含 `bkup` 的节点单独分组，故障转移自动包含，不参与国家分组
-- **zer0direct 规则集** — 自定义直连域名列表
-- **精简代理组** — 移除 SSH / 搜狗输入法 / Apple / Spotify / Truth Social / 新浪微博 等独立组
-- **jsdelivr CDN** — 所有规则集和图标走 jsdelivr，国内可用
+- **Video 统一组** - YouTube / Netflix / Twitch / Bahamut / PikPak / TikTok 合并到 `Video`
+- **选择代理 统一组** - Telegram / Twitter / Crypto / GFWList 合并到 `选择代理`
+- **bkup 节点过滤** - 名称含 `bkup` 的节点单独分组，故障转移自动包含，不参与国家分组
+- **zer0direct 规则集** - 自定义直连域名列表
+- **精简代理组** - 移除 SSH / 搜狗输入法 / Apple / Spotify / Truth Social / 新浪微博 等独立组
+- **jsdelivr CDN** - 所有规则集和图标走 jsdelivr，国内可用
 
 ## 参数
 
@@ -60,12 +60,12 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/zer0extras.yaml
 
 ## 更新 zer0direct
 
-编辑 `ruleset/zer0direct.txt`，一行一个域名。
+编辑 `ruleset/zer0direct.yaml`，一行一个域名。
 
 ## 构建
 
 ```bash
 npm install
 npm run build
-# 产物: zer0plan.js / zer0plan.min.js
+# 产物: mainline.js / mainline.min.js
 ```
