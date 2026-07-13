@@ -102,13 +102,13 @@ export function buildProxyGroups({
             tolerance: 20,
             lazy: true,
         },
-        // 4. 故障转移
+        // 4. 故障转移（排除香港节点，HK易受GFW干扰不适合做fallback）
         {
             name: PROXY_GROUPS.FALLBACK,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
             type: "fallback",
             url: SPEEDTEST_URL,
-            proxies: [...defaultFallback, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
+            proxies: [...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`), ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
             interval: 60,
             tolerance: 20,
             lazy: true,
