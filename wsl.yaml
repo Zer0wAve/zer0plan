@@ -4,11 +4,11 @@
 # jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
 
 # ===== Mihomo 控制字段 =====
-mixed-port: 7891
+mixed-port: 15396
 allow-lan: true
 bind-address: '*'
 mode: rule
 log-level: info
-external-controller: 0.0.0.0:9091
+external-controller: 0.0.0.0:15397
 secret: '8bwugx-z9xEzaHSioJdje57ijUVlbCnt'
 external-ui: /home/hululu/workspace/mihomo/ui
