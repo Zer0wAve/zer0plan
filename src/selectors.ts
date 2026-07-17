@@ -25,8 +25,8 @@ export function buildBaseLists({
     const bkup = bkupNodes.length > 0;
 
     const defaultSelector = buildList(
-        PROXY_GROUPS.AUTO,
         PROXY_GROUPS.FALLBACK,
+        PROXY_GROUPS.AUTO,
         landing && PROXY_GROUPS.LANDING,
         suffixedCountryNames,
         lowCost && PROXY_GROUPS.LOW_COST,
