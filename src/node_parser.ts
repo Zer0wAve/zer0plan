@@ -37,7 +37,10 @@ export function parseBkupNodes(nodes: ProxyNode[]): {
 
     for (const node of nodes || []) {
         if (node.name && /bkup/i.test(node.name)) {
-            bkupNodes.push(node);
+            // 排除香港节点（HK被GFW干扰，不适合做AI fallback）
+            if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
+                bkupNodes.push(node);
+            }
         } else {
             activeNodes.push(node);
         }

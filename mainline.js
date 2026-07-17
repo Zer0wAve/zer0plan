@@ -480,7 +480,9 @@ https://github.com/powerfullz/override-rules
     const activeNodes = [];
     for (const node of nodes || []) {
       if (node.name && /bkup/i.test(node.name)) {
-        bkupNodes.push(node);
+        if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
+          bkupNodes.push(node);
+        }
       } else {
         activeNodes.push(node);
       }
