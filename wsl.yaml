@@ -1,0 +1,14 @@
+# wsl - WSL2 Mihomo 独立部署覆写
+# 在 SubStore 中作为额外覆写使用，给 mainline.min.js 生成的配置补充顶层控制字段
+# 运行顺序：先跑主 override JS（mainline.min.js），再跑此 YAML
+# jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
+
+# ===== Mihomo 控制字段 =====
+mixed-port: 7891
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: info
+external-controller: 0.0.0.0:9091
+secret: '8bwugx-z9xEzaHSioJdje57ijUVlbCnt'
+external-ui: /home/hululu/workspace/mihomo/ui
