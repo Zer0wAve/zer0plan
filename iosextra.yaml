@@ -49,6 +49,6 @@ script:
 # ===== 在 rules 头部追加局域网直连规则 + QUIC 屏蔽 =====
 +rules:
   - SCRIPT,quic,REJECT
-  - DOMAIN,hen-avior.ts.net,Homeland
+  - DOMAIN-SUFFIX,hen-avior.ts.net,Homeland
   - IP-CIDR,100.64.0.0/10,Homeland
   - IP-CIDR,192.168.0.0/16,Homeland
