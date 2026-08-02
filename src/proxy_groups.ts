@@ -118,7 +118,12 @@ export function buildProxyGroups({
             name: PROXY_GROUPS.AI_SERVICE,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
             type: "select",
-            proxies: defaultProxies,
+            proxies: defaultProxies.filter(p => 
+                p !== `香港${NODE_SUFFIX}` && 
+                p !== `台湾${NODE_SUFFIX}` && 
+                p !== PROXY_GROUPS.LOW_COST && 
+                p !== "DIRECT"
+            ),
         },
         // 6. 前置代理 (conditional)
         landing
