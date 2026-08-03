@@ -1,14 +1,16 @@
 #########################################
 # Sukka's Ruleset - CDN Domains
-# Last Updated: 2026-07-21T16:18:25.336Z
-# Size: 4555
+# Last Updated: 2026-08-02T09:45:05.519Z
+# Size: 4569
 # License: AGPL 3.0
 # Homepage: https://ruleset.skk.moe
 # GitHub: https://github.com/SukkaW/Surge
 #
 # This file contains object storage and static assets CDN domains.
+#
+# $content-hash-v1$:mdwymFDvxO-VOuiEyIVr-EC4QAM1um38XrDEnXAXV3Q$
 #########################################
-7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe
+7h15_ru1353t_1s_m4d3_by_5ukk4w.skk.moe
 0x0.st
 eep.io
 +.esm.sh
@@ -1910,6 +1912,10 @@ img.javstore.net
 img.jsdelivr.com
 img.kbhgames.com
 img.moviefap.com
+img.novipnoad.ca
+img.novipnoad.cc
+img.novipnoad.uk
+img.novipnoad.us
 img.olympics.com
 +.img.sooplive.com
 img.sparemin.com
@@ -1945,6 +1951,7 @@ lm.visualon.info
 magic.scalar.com
 +.mangadex.network
 maps.gstatic.com
+maps.hereapi.com
 maps.wplace.live
 mcdns.vrporn.com
 +.media-amazon.com
@@ -2276,6 +2283,9 @@ images.svc.ui.com
 images.vexels.com
 +.img.haiwaikan.com
 img.imoutomoe.net
+img.novipnoad.com
+img.novipnoad.net
+img.novipnoad.xyz
 img.picacomic.com
 img.riskified.com
 img2.gelbooru.com
@@ -2479,6 +2489,7 @@ cdn.convertbox.com
 cdn.conveythis.com
 cdn.datatables.net
 cdn.delight-vr.com
+cdn.dictionary.com
 +.cdn.discordapp.com
 cdn.document360.io
 cdn.fourthwall.com
@@ -2831,6 +2842,7 @@ cdn.sso.mozilla.com
 cdn.starapps.studio
 cdn.tailwindcss.com
 cdn.theatlantic.com
+cdn.theregister.com
 cdn.thingiverse.com
 cdn.trustedsite.com
 cdn.webclicks24.com
@@ -2988,6 +3000,7 @@ static.esimplus.net
 static.euronews.com
 static.formula1.com
 static.getbutton.io
+static.giffgaff.com
 static.gigabyte.com
 static.goaffpro.com
 static.mendeley.com
@@ -3421,6 +3434,7 @@ i.creativecommons.org
 icms-image.slatic.net
 image-cdn.porndig.com
 image.ship.vercel.com
+image.theregister.com
 image.worthepenny.com
 images-sports.now.com
 images.contentful.com
@@ -4320,6 +4334,7 @@ checkout-sdk.bigcommerce.com
 cms-assets.webediamovies.pro
 code.buywithprime.amazon.com
 components.cyclingfactory.be
+connectcache20.azureedge.net
 +.csp-reporting.cloudflare.com
 doppler-config.cbsivideo.com
 fastly-cloud.typenetwork.com
@@ -4445,6 +4460,7 @@ cdn-widgetsrepository.yotpo.com
 cdn.playersupport.riotgames.com
 cdn.techcommunity.microsoft.com
 +.clientmetrics-pa.googleapis.com
+community-cdn.openstreetmap.org
 external-content.duckduckgo.com
 files.mastodon.ktachibana.party
 hhhhhhome86227170.wordpress.com
