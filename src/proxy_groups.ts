@@ -91,9 +91,10 @@ export function buildProxyGroups({
     .filter((country) => aiSupportedCountries.has(country))
     .map((country) => `${country}${NODE_SUFFIX}`);
 
-  // Telegram 使用独立、固定顺序的策略组；优先近端稳定出口，最后才交给通用故障转移。
-  // 用户可在 Stash 中固定选择“新加坡节点”或“日本节点”，避免 url-test 使用中切换出口。
-  const telegramPreferredCountries = new Set([
+  // Telegram 使用独立 fallback 组，成员是具体节点（按国家优先级展开），不引用竞速组。
+  // fallback 语义：第一个健康节点持续使用，仅在该节点不可用时才切换到下一个——不会像 url-test 那样周期性换节点，
+  // 避免 MTProto 长连接被周期性测速切换打断。WSL2 mihomo 与 iOS Stash 共用此配置，Telegram 掉线影响大，稳定性优先。
+  const telegramPreferredCountries = [
     "新加坡",
     "日本",
     "美国",
@@ -103,11 +104,13 @@ export function buildProxyGroups({
     "法国",
     "澳大利亚",
     "韩国",
-  ]);
+  ];
   const telegramProxies = [
-    ...countryNames
-      .filter((country) => telegramPreferredCountries.has(country))
-      .map((country) => `${country}${NODE_SUFFIX}`),
+    ...telegramPreferredCountries
+      .filter((country) => countryNodes[country]?.length)
+      .flatMap((country) =>
+        countryNodes[country].map((node) => node.name).filter(isNotNull),
+      ),
     PROXY_GROUPS.FALLBACK,
   ];
 
@@ -164,11 +167,16 @@ export function buildProxyGroups({
       type: "select",
       proxies: aiProxies,
     },
-    // 6. Telegram：独立于通用故障转移；固定选择近端节点可减少长期 MTProto 连接被切换
+    // 6. Telegram：独立 fallback 组。成员为具体节点（按国家优先级展开），
+    //    fallback 语义：首个健康节点持续使用，节点失效才切换下一个，避免 url-test 周期性换节点打断 MTProto 长连接。
     {
       name: PROXY_GROUPS.TELEGRAM,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
-      type: "select",
+      type: "fallback",
+      url: SPEEDTEST_URL,
+      interval: 60,
+      tolerance: 20,
+      lazy: true,
       proxies: telegramProxies,
     },
     // 7. 前置代理 (conditional)

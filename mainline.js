@@ -308,7 +308,7 @@ https://github.com/powerfullz/override-rules
       "澳大利亚"
     ]);
     const aiProxies = countryNames.filter((country) => aiSupportedCountries.has(country)).map((country) => `${country}${NODE_SUFFIX}`);
-    const telegramPreferredCountries = /* @__PURE__ */ new Set([
+    const telegramPreferredCountries = [
       "新加坡",
       "日本",
       "美国",
@@ -318,9 +318,11 @@ https://github.com/powerfullz/override-rules
       "法国",
       "澳大利亚",
       "韩国"
-    ]);
+    ];
     const telegramProxies = [
-      ...countryNames.filter((country) => telegramPreferredCountries.has(country)).map((country) => `${country}${NODE_SUFFIX}`),
+      ...telegramPreferredCountries.filter((country) => countryNodes[country]?.length).flatMap(
+        (country) => countryNodes[country].map((node) => node.name).filter(isNotNull)
+      ),
       PROXY_GROUPS.FALLBACK
     ];
     const groups = [
@@ -373,11 +375,16 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: aiProxies
       },
-      // 6. Telegram：独立于通用故障转移；固定选择近端节点可减少长期 MTProto 连接被切换
+      // 6. Telegram：独立 fallback 组。成员为具体节点（按国家优先级展开），
+      //    fallback 语义：首个健康节点持续使用，节点失效才切换下一个，避免 url-test 周期性换节点打断 MTProto 长连接。
       {
         name: PROXY_GROUPS.TELEGRAM,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
-        type: "select",
+        type: "fallback",
+        url: SPEEDTEST_URL,
+        interval: 60,
+        tolerance: 20,
+        lazy: true,
         proxies: telegramProxies
       },
       // 7. 前置代理 (conditional)
