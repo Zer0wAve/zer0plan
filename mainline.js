@@ -89,6 +89,7 @@ https://github.com/powerfullz/override-rules
         AUTO: "自动选择",
         FALLBACK: "故障转移",
         AI_SERVICE: "AI服务",
+        TELEGRAM: "Telegram",
         FRONT_PROXY: "前置代理",
         LANDING: "落地节点",
         STATIC_RESOURCES: "静态资源",
@@ -295,6 +296,33 @@ https://github.com/powerfullz/override-rules
     const hasTW = countryNames.includes("台湾");
     const hasHK = countryNames.includes("香港");
     const hasBkup = bkupNodes.length > 0;
+    const aiSupportedCountries = /* @__PURE__ */ new Set([
+      "新加坡",
+      "日本",
+      "韩国",
+      "美国",
+      "加拿大",
+      "英国",
+      "德国",
+      "法国",
+      "澳大利亚"
+    ]);
+    const aiProxies = countryNames.filter((country) => aiSupportedCountries.has(country)).map((country) => `${country}${NODE_SUFFIX}`);
+    const telegramPreferredCountries = /* @__PURE__ */ new Set([
+      "新加坡",
+      "日本",
+      "美国",
+      "加拿大",
+      "英国",
+      "德国",
+      "法国",
+      "澳大利亚",
+      "韩国"
+    ]);
+    const telegramProxies = [
+      ...countryNames.filter((country) => telegramPreferredCountries.has(country)).map((country) => `${country}${NODE_SUFFIX}`),
+      PROXY_GROUPS.FALLBACK
+    ];
     const groups = [
       // 1. 选择代理
       {
@@ -330,21 +358,29 @@ https://github.com/powerfullz/override-rules
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
         type: "fallback",
         url: SPEEDTEST_URL,
-        proxies: [...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`), ...hasBkup ? [PROXY_GROUPS.BKUP] : []],
+        proxies: [
+          ...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`),
+          ...hasBkup ? [PROXY_GROUPS.BKUP] : []
+        ],
         interval: 60,
         tolerance: 20,
         lazy: true
       },
-      // 5. AI服务
+      // 5. AI服务：仅保守的官方支持地区，不提供 DIRECT/低倍率/不确定地区出口
       {
         name: PROXY_GROUPS.AI_SERVICE,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
         type: "select",
-        proxies: defaultProxies.filter(
-          (p) => p !== `香港${NODE_SUFFIX}` && p !== `台湾${NODE_SUFFIX}` && p !== PROXY_GROUPS.LOW_COST && p !== "DIRECT"
-        )
+        proxies: aiProxies
       },
-      // 6. 前置代理 (conditional)
+      // 6. Telegram：独立于通用故障转移；固定选择近端节点可减少长期 MTProto 连接被切换
+      {
+        name: PROXY_GROUPS.TELEGRAM,
+        icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
+        type: "select",
+        proxies: telegramProxies
+      },
+      // 7. 前置代理 (conditional)
       landing ? {
         name: PROXY_GROUPS.FRONT_PROXY,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Area.png`,
@@ -415,7 +451,9 @@ https://github.com/powerfullz/override-rules
           "include-all": true,
           filter: meta.pattern,
           ...meta.excludePattern ? { "exclude-filter": meta.excludePattern } : {}
-        } : { proxies: countryNodes[country]?.map((n) => n.name).filter(isNotNull) };
+        } : {
+          proxies: countryNodes[country]?.map((n) => n.name).filter(isNotNull)
+        };
         return buildGroupByType({
           name: `${country}${NODE_SUFFIX}`,
           icon: meta.icon,
@@ -428,7 +466,12 @@ https://github.com/powerfullz/override-rules
         name: PROXY_GROUPS.LOW_COST,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Lab.png`,
         groupType,
-        nodeSource: !regexFilter ? { proxies: lowCostNodes.map((node) => node.name).filter(isNotNull) } : { "include-all": true, filter: LOW_COST_NODE_MATCHER.pattern }
+        nodeSource: !regexFilter ? {
+          proxies: lowCostNodes.map((node) => node.name).filter(isNotNull)
+        } : {
+          "include-all": true,
+          filter: LOW_COST_NODE_MATCHER.pattern
+        }
       }) : null,
       // 15b. 备用节点 (conditional, url-test)
       bkupNodes.length > 0 ? {
@@ -547,7 +590,9 @@ https://github.com/powerfullz/override-rules
   });
 
   // src/rules.ts
-  function buildRules({ quicEnabled }) {
+  function buildRules({
+    quicEnabled
+  }) {
     const ruleList = [...baseRules];
     ruleList.unshift(
       "PROCESS-NAME,v2ray,DIRECT",
@@ -587,8 +632,8 @@ https://github.com/powerfullz/override-rules
         `GEOSITE,category-ai-!cn,${PROXY_GROUPS.AI_SERVICE}`,
         `RULE-SET,BiliIntl,${PROXY_GROUPS.BILIBILI}`,
         `GEOSITE,youtube,${PROXY_GROUPS.VIDEO}`,
-        `GEOSITE,telegram,${PROXY_GROUPS.FALLBACK}`,
-        `GEOIP,telegram,${PROXY_GROUPS.FALLBACK},no-resolve`,
+        `GEOSITE,telegram,${PROXY_GROUPS.TELEGRAM}`,
+        `GEOIP,telegram,${PROXY_GROUPS.TELEGRAM},no-resolve`,
         `GEOSITE,xbox,${PROXY_GROUPS.XBOX}`,
         `GEOSITE,github,${PROXY_GROUPS.GITHUB}`,
         `GEOSITE,netflix,${PROXY_GROUPS.VIDEO}`,
@@ -738,7 +783,11 @@ https://github.com/powerfullz/override-rules
   });
 
   // src/dns.ts
-  function buildDnsConfig({ mode, ipv6Enabled, fakeIpFilter }) {
+  function buildDnsConfig({
+    mode,
+    ipv6Enabled,
+    fakeIpFilter
+  }) {
     const config = {
       enable: true,
       ipv6: ipv6Enabled,
@@ -750,16 +799,26 @@ https://github.com/powerfullz/override-rules
         "https://dns.cloudflare.com/dns-query",
         "https://dns.google/dns-query"
       ],
-      "proxy-server-nameserver": ["https://dns.alidns.com/dns-query", "https://doh.pub/dns-query"]
+      "proxy-server-nameserver": [
+        "https://dns.alidns.com/dns-query",
+        "https://doh.pub/dns-query"
+      ]
     };
     if (fakeIpFilter) {
       config["fake-ip-filter"] = fakeIpFilter;
     }
     return config;
   }
-  function buildDns({ fakeIPEnabled, ipv6Enabled }) {
+  function buildDns({
+    fakeIPEnabled,
+    ipv6Enabled
+  }) {
     if (fakeIPEnabled) {
-      return buildDnsConfig({ mode: "fake-ip", ipv6Enabled, fakeIpFilter: FAKE_IP_FILTER });
+      return buildDnsConfig({
+        mode: "fake-ip",
+        ipv6Enabled,
+        fakeIpFilter: FAKE_IP_FILTER
+      });
     }
     return buildDnsConfig({ mode: "redir-host", ipv6Enabled });
   }
@@ -774,6 +833,11 @@ https://github.com/powerfullz/override-rules
         "dig.io.mi.com",
         "localhost.ptlogin2.qq.com",
         "*.icloud.com",
+        // Telegram 使用长期 MTProto 连接；绕过 Fake-IP 避免网络切换后域名映射与旧连接不同步。
+        "+.telegram.org",
+        "+.telegram.me",
+        "+.t.me",
+        "+.telegra.ph",
         "*.stun.*.*",
         "*.stun.*.*.*"
       ];

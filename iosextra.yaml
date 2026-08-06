@@ -6,6 +6,8 @@
 # ===== 基础设置 =====
 mode: rule
 log-level: warning
+# 保持 TCP 长连接的探活；Telegram 在 iOS 后台/网络切换后更容易发现失效会话并重连。
+disable-keep-alive: false
 
 # ===== DNS 配置（暂时注释，用 mainline.js 自带的）=====
 # dns:
