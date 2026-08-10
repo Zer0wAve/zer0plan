@@ -76,19 +76,19 @@ export function buildProxyGroups({
 
   // 仅列入 OpenAI、Anthropic 与 Gemini API 当前均明确支持的保守地区。
   // 故意排除香港、台湾、俄罗斯、低倍率和 DIRECT，避免 AI 服务触发地区限制或出口漂移。
-  const aiSupportedCountries = new Set([
+  const aiPreferredCountries = [
+    "美国",
     "新加坡",
     "日本",
     "韩国",
-    "美国",
     "加拿大",
     "英国",
     "德国",
     "法国",
     "澳大利亚",
-  ]);
-  const aiProxies = countryNames
-    .filter((country) => aiSupportedCountries.has(country))
+  ];
+  const aiProxies = aiPreferredCountries
+    .filter((country) => countryNames.includes(country))
     .map((country) => `${country}${NODE_SUFFIX}`);
 
   // Telegram 使用独立 fallback 组，成员是具体节点（按国家优先级展开），不引用竞速组。
@@ -160,12 +160,12 @@ export function buildProxyGroups({
       tolerance: 20,
       lazy: true,
     },
-    // 5. AI服务：仅保守的官方支持地区，不提供 DIRECT/低倍率/不确定地区出口
+    // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
     {
       name: PROXY_GROUPS.AI_SERVICE,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
       type: "select",
-      proxies: aiProxies,
+      proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies],
     },
     // 6. Telegram：独立 fallback 组。成员为具体节点（按国家优先级展开），
     //    fallback 语义：首个健康节点持续使用，节点失效才切换下一个，避免 url-test 周期性换节点打断 MTProto 长连接。
@@ -188,7 +188,7 @@ export function buildProxyGroups({
           proxies: frontProxySelector,
         }
       : null,
-    // 7. 落地节点 (conditional)
+    // 8. 落地节点 (conditional)
     landing
       ? {
           name: PROXY_GROUPS.LANDING,
@@ -197,28 +197,28 @@ export function buildProxyGroups({
           proxies: landingNodes.map((node) => node.name).filter(isNotNull),
         }
       : null,
-    // 8. 静态资源
+    // 9. 静态资源
     {
       name: PROXY_GROUPS.STATIC_RESOURCES,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`,
       type: "select",
       proxies: defaultProxies,
     },
-    // 9. 谷歌服务
+    // 10. 谷歌服务
     {
       name: PROXY_GROUPS.GOOGLE,
       icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
       type: "select",
       proxies: defaultProxies,
     },
-    // 10. 微软服务
+    // 11. 微软服务
     {
       name: PROXY_GROUPS.MICROSOFT,
       icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Microsoft_Copilot.png`,
       type: "select",
       proxies: defaultProxies,
     },
-    // 11. 哔哩哔哩
+    // 12. 哔哩哔哩
     {
       name: PROXY_GROUPS.BILIBILI,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/bilibili.png`,
@@ -228,21 +228,21 @@ export function buildProxyGroups({
           ? ["DIRECT", `台湾节点`, `香港节点`]
           : defaultProxiesDirect,
     },
-    // 12. Xbox
+    // 13. Xbox
     {
       name: PROXY_GROUPS.XBOX,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`,
       type: "select",
       proxies: defaultProxies,
     },
-    // 13. Github
+    // 14. Github
     {
       name: PROXY_GROUPS.GITHUB,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`,
       type: "select",
       proxies: defaultProxies,
     },
-    // 14. Video
+    // 15. Video
     {
       name: PROXY_GROUPS.VIDEO,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`,
@@ -324,6 +324,17 @@ export function buildProxyGroups({
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,
       type: "select",
       proxies: [PROXY_GROUPS.SELECT, "DIRECT"],
+    },
+    // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
+    {
+      name: PROXY_GROUPS.AI_FALLBACK,
+      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
+      type: "fallback",
+      url: SPEEDTEST_URL,
+      proxies: [...aiProxies, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
+      interval: 60,
+      tolerance: 20,
+      lazy: true,
     },
   ];
 

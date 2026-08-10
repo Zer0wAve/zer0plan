@@ -89,6 +89,7 @@ https://github.com/powerfullz/override-rules
         AUTO: "自动选择",
         FALLBACK: "故障转移",
         AI_SERVICE: "AI服务",
+        AI_FALLBACK: "AI故障转移",
         TELEGRAM: "Telegram",
         FRONT_PROXY: "前置代理",
         LANDING: "落地节点",
@@ -296,18 +297,18 @@ https://github.com/powerfullz/override-rules
     const hasTW = countryNames.includes("台湾");
     const hasHK = countryNames.includes("香港");
     const hasBkup = bkupNodes.length > 0;
-    const aiSupportedCountries = /* @__PURE__ */ new Set([
+    const aiPreferredCountries = [
+      "美国",
       "新加坡",
       "日本",
       "韩国",
-      "美国",
       "加拿大",
       "英国",
       "德国",
       "法国",
       "澳大利亚"
-    ]);
-    const aiProxies = countryNames.filter((country) => aiSupportedCountries.has(country)).map((country) => `${country}${NODE_SUFFIX}`);
+    ];
+    const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
     const telegramPreferredCountries = [
       "新加坡",
       "日本",
@@ -368,12 +369,12 @@ https://github.com/powerfullz/override-rules
         tolerance: 20,
         lazy: true
       },
-      // 5. AI服务：仅保守的官方支持地区，不提供 DIRECT/低倍率/不确定地区出口
+      // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
       {
         name: PROXY_GROUPS.AI_SERVICE,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
         type: "select",
-        proxies: aiProxies
+        proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies]
       },
       // 6. Telegram：独立 fallback 组。成员为具体节点（按国家优先级展开），
       //    fallback 语义：首个健康节点持续使用，节点失效才切换下一个，避免 url-test 周期性换节点打断 MTProto 长连接。
@@ -394,56 +395,56 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: frontProxySelector
       } : null,
-      // 7. 落地节点 (conditional)
+      // 8. 落地节点 (conditional)
       landing ? {
         name: PROXY_GROUPS.LANDING,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Airport.png`,
         type: "select",
         proxies: landingNodes.map((node) => node.name).filter(isNotNull)
       } : null,
-      // 8. 静态资源
+      // 9. 静态资源
       {
         name: PROXY_GROUPS.STATIC_RESOURCES,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`,
         type: "select",
         proxies: defaultProxies
       },
-      // 9. 谷歌服务
+      // 10. 谷歌服务
       {
         name: PROXY_GROUPS.GOOGLE,
         icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
         type: "select",
         proxies: defaultProxies
       },
-      // 10. 微软服务
+      // 11. 微软服务
       {
         name: PROXY_GROUPS.MICROSOFT,
         icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Microsoft_Copilot.png`,
         type: "select",
         proxies: defaultProxies
       },
-      // 11. 哔哩哔哩
+      // 12. 哔哩哔哩
       {
         name: PROXY_GROUPS.BILIBILI,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/bilibili.png`,
         type: "select",
         proxies: hasTW && hasHK ? ["DIRECT", `台湾节点`, `香港节点`] : defaultProxiesDirect
       },
-      // 12. Xbox
+      // 13. Xbox
       {
         name: PROXY_GROUPS.XBOX,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`,
         type: "select",
         proxies: defaultProxies
       },
-      // 13. Github
+      // 14. Github
       {
         name: PROXY_GROUPS.GITHUB,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`,
         type: "select",
         proxies: defaultProxies
       },
-      // 14. Video
+      // 15. Video
       {
         name: PROXY_GROUPS.VIDEO,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`,
@@ -511,6 +512,17 @@ https://github.com/powerfullz/override-rules
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,
         type: "select",
         proxies: [PROXY_GROUPS.SELECT, "DIRECT"]
+      },
+      // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
+      {
+        name: PROXY_GROUPS.AI_FALLBACK,
+        icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
+        type: "fallback",
+        url: SPEEDTEST_URL,
+        proxies: [...aiProxies, ...hasBkup ? [PROXY_GROUPS.BKUP] : []],
+        interval: 60,
+        tolerance: 20,
+        lazy: true
       }
     ];
     return groups.filter(isNotNull);

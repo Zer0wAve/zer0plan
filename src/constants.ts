@@ -15,6 +15,7 @@ export const PROXY_GROUPS = {
   AUTO: "自动选择",
   FALLBACK: "故障转移",
   AI_SERVICE: "AI服务",
+  AI_FALLBACK: "AI故障转移",
   TELEGRAM: "Telegram",
   FRONT_PROXY: "前置代理",
   LANDING: "落地节点",
