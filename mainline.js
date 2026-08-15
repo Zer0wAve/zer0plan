@@ -310,7 +310,7 @@ https://github.com/powerfullz/override-rules
     ];
     const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
     const telegramPreferredCountries = [
-      "新加坡",
+      "香港",
       "日本",
       "美国",
       "加拿大",
