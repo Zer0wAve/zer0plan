@@ -61,6 +61,7 @@ export function buildProxyGroups({
   countryNodes,
   lowCostNodes,
   bkupNodes,
+  telegramBkupNodes,
   nonLandingNodes,
   landing,
   landingNodes,
@@ -106,6 +107,9 @@ export function buildProxyGroups({
     "韩国",
   ];
   const telegramProxies = [
+    // Backup Hong Kong nodes come from independent subscriptions. They are excluded from
+    // the generic and AI fallback groups but are preferred here for Telegram continuity.
+    ...telegramBkupNodes.map((node) => node.name).filter(isNotNull),
     ...telegramPreferredCountries
       .filter((country) => countryNodes[country]?.length)
       .flatMap((country) =>

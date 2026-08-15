@@ -30,15 +30,19 @@ export function parseLowCost(nodes: ProxyNode[]): ProxyNode[] {
  */
 export function parseBkupNodes(nodes: ProxyNode[]): {
     bkupNodes: ProxyNode[];
+    telegramBkupNodes: ProxyNode[];
     activeNodes: ProxyNode[];
 } {
     const bkupNodes: ProxyNode[] = [];
+    const telegramBkupNodes: ProxyNode[] = [];
     const activeNodes: ProxyNode[] = [];
 
     for (const node of nodes || []) {
         if (node.name && /bkup/i.test(node.name)) {
             // 排除香港节点（HK被GFW干扰，不适合做AI fallback）
-            if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
+            if (COUNTRY_REGEX_MAP["香港"].test(node.name)) {
+                telegramBkupNodes.push(node);
+            } else {
                 bkupNodes.push(node);
             }
         } else {
@@ -46,7 +50,7 @@ export function parseBkupNodes(nodes: ProxyNode[]): {
         }
     }
 
-    return { bkupNodes, activeNodes };
+    return { bkupNodes, telegramBkupNodes, activeNodes };
 }
 
 /**

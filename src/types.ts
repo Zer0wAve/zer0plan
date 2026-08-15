@@ -206,6 +206,7 @@ export interface BuildProxyGroupsInput {
     countryNodes: Record<string, ProxyNode[]>;
     lowCostNodes: ProxyNode[];
     bkupNodes: ProxyNode[];
+    telegramBkupNodes: ProxyNode[];
     nonLandingNodes: ProxyNode[];
     landing: boolean;
     landingNodes: ProxyNode[];
