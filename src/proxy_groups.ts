@@ -95,7 +95,7 @@ export function buildProxyGroups({
   // fallback 语义：第一个健康节点持续使用，仅在该节点不可用时才切换到下一个——不会像 url-test 那样周期性换节点，
   // 避免 MTProto 长连接被周期性测速切换打断。WSL2 mihomo 与 iOS Stash 共用此配置，Telegram 掉线影响大，稳定性优先。
   const telegramPreferredCountries = [
-    "新加坡",
+    "香港",
     "日本",
     "美国",
     "加拿大",
