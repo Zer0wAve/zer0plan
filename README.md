@@ -42,6 +42,20 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/iosextra.yaml
 
 运行顺序：先跑 SubStore 覆写脚本（mainline.min.js），再跑此 YAML（iosextra.yaml）。
 
+### WSL2 Mihomo 额外覆写
+
+GitHub Raw（实时，需代理）：
+```
+https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/wsl.yaml
+```
+
+jsDelivr CDN（国内可用，有缓存）：
+```
+https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
+```
+
+运行顺序：先跑 SubStore 覆写脚本（mainline.min.js），再跑此 YAML（wsl.yaml）。
+
 ## 与上游的区别
 
 - **Video 统一组** - YouTube / Netflix / Twitch / Bahamut / PikPak / TikTok 合并到 `Video`
