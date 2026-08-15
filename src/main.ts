@@ -73,7 +73,7 @@ function main(config: ClashConfig): ClashConfig {
     const { landingNodes, nonLandingNodes } = parseNodesByLanding(config.proxies);
     const landing = landingNodes.length > 0 && nonLandingNodes.length > 0;
     const effectiveNodes = landing ? nonLandingNodes : config.proxies;
-    const { bkupNodes, telegramBkupNodes, activeNodes } = parseBkupNodes(effectiveNodes);
+    const { bkupNodes, activeNodes } = parseBkupNodes(effectiveNodes);
     const countryNodes = parseCountries(activeNodes);
     const lowCostNodes = parseLowCost(activeNodes);
     const countryNames = getActiveCountryNames(countryNodes, countryThreshold);
@@ -100,7 +100,6 @@ function main(config: ClashConfig): ClashConfig {
         countryNodes,
         lowCostNodes,
         bkupNodes,
-        telegramBkupNodes,
         nonLandingNodes,
         landing,
         landingNodes,

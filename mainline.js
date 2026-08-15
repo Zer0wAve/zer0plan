@@ -285,7 +285,6 @@ https://github.com/powerfullz/override-rules
     countryNodes,
     lowCostNodes,
     bkupNodes,
-    telegramBkupNodes,
     nonLandingNodes,
     landing,
     landingNodes,
@@ -322,9 +321,6 @@ https://github.com/powerfullz/override-rules
       "韩国"
     ];
     const telegramProxies = [
-      // Backup Hong Kong nodes come from independent subscriptions. They are excluded from
-      // the generic and AI fallback groups but are preferred here for Telegram continuity.
-      ...telegramBkupNodes.map((node) => node.name).filter(isNotNull),
       ...telegramPreferredCountries.filter((country) => countryNodes[country]?.length).flatMap(
         (country) => countryNodes[country].map((node) => node.name).filter(isNotNull)
       ),
@@ -545,20 +541,17 @@ https://github.com/powerfullz/override-rules
   }
   function parseBkupNodes(nodes) {
     const bkupNodes = [];
-    const telegramBkupNodes = [];
     const activeNodes = [];
     for (const node of nodes || []) {
       if (node.name && /bkup/i.test(node.name)) {
-        if (COUNTRY_REGEX_MAP["香港"].test(node.name)) {
-          telegramBkupNodes.push(node);
-        } else {
+        if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
           bkupNodes.push(node);
         }
       } else {
         activeNodes.push(node);
       }
     }
-    return { bkupNodes, telegramBkupNodes, activeNodes };
+    return { bkupNodes, activeNodes };
   }
   function parseNodesByLanding(nodes) {
     const landingNodes = [];
@@ -1015,7 +1008,7 @@ https://github.com/powerfullz/override-rules
         const { landingNodes, nonLandingNodes } = parseNodesByLanding(config.proxies);
         const landing = landingNodes.length > 0 && nonLandingNodes.length > 0;
         const effectiveNodes = landing ? nonLandingNodes : config.proxies;
-        const { bkupNodes, telegramBkupNodes, activeNodes } = parseBkupNodes(effectiveNodes);
+        const { bkupNodes, activeNodes } = parseBkupNodes(effectiveNodes);
         const countryNodes = parseCountries(activeNodes);
         const lowCostNodes = parseLowCost(activeNodes);
         const countryNames = getActiveCountryNames(countryNodes, countryThreshold);
@@ -1040,7 +1033,6 @@ https://github.com/powerfullz/override-rules
           countryNodes,
           lowCostNodes,
           bkupNodes,
-          telegramBkupNodes,
           nonLandingNodes,
           landing,
           landingNodes,
