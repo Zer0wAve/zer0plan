@@ -91,27 +91,23 @@ export function buildProxyGroups({
     .filter((country) => countryNames.includes(country))
     .map((country) => `${country}${NODE_SUFFIX}`);
 
-  // Telegram 使用独立 fallback 组，成员是具体节点（按国家优先级展开），不引用竞速组。
-  // fallback 语义：第一个健康节点持续使用，仅在该节点不可用时才切换到下一个——不会像 url-test 那样周期性换节点，
-  // 避免 MTProto 长连接被周期性测速切换打断。WSL2 mihomo 与 iOS Stash 共用此配置，Telegram 掉线影响大，稳定性优先。
+  // Telegram 仅使用花云的指定出口，按固定顺序展开具体节点，末尾由独立 bkup 组兜底。
+  // fallback 会持续使用首个健康节点，只有不可用时才切换，避免 url-test 定时换节点中断 MTProto 长连接。
   const telegramPreferredCountries = [
     "香港",
     "日本",
+    "台湾",
     "美国",
-    "加拿大",
-    "英国",
-    "德国",
-    "法国",
-    "澳大利亚",
-    "韩国",
+    "新加坡",
   ];
   const telegramProxies = [
-    ...telegramPreferredCountries
-      .filter((country) => countryNodes[country]?.length)
-      .flatMap((country) =>
-        countryNodes[country].map((node) => node.name).filter(isNotNull),
-      ),
-    PROXY_GROUPS.FALLBACK,
+    ...telegramPreferredCountries.flatMap((country) =>
+      (countryNodes[country] || [])
+        .filter((node) => node.name?.startsWith("花云-"))
+        .map((node) => node.name)
+        .filter(isNotNull),
+    ),
+    ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
   ];
 
   const groups: Array<ProxyGroup | null> = [

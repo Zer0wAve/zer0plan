@@ -312,19 +312,15 @@ https://github.com/powerfullz/override-rules
     const telegramPreferredCountries = [
       "香港",
       "日本",
+      "台湾",
       "美国",
-      "加拿大",
-      "英国",
-      "德国",
-      "法国",
-      "澳大利亚",
-      "韩国"
+      "新加坡"
     ];
     const telegramProxies = [
-      ...telegramPreferredCountries.filter((country) => countryNodes[country]?.length).flatMap(
-        (country) => countryNodes[country].map((node) => node.name).filter(isNotNull)
+      ...telegramPreferredCountries.flatMap(
+        (country) => (countryNodes[country] || []).filter((node) => node.name?.startsWith("花云-")).map((node) => node.name).filter(isNotNull)
       ),
-      PROXY_GROUPS.FALLBACK
+      ...hasBkup ? [PROXY_GROUPS.BKUP] : []
     ];
     const groups = [
       // 1. 选择代理
