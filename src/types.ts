@@ -70,7 +70,10 @@ export interface FallbackProxyGroup extends BaseProxyGroup {
     type: "fallback";
     url: string;
     interval: number;
-    tolerance: number;
+    tolerance?: number;
+    timeout?: number;
+    "max-failed-times"?: number;
+    "expected-status"?: string;
 }
 
 export type ProxyGroup =

@@ -163,15 +163,17 @@ export function buildProxyGroups({
       type: "select",
       proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies],
     },
-    // 6. Telegram：独立 fallback 组。成员为具体节点（按国家优先级展开），
-    //    fallback 语义：首个健康节点持续使用，节点失效才切换下一个，避免 url-test 周期性换节点打断 MTProto 长连接。
+    // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
+    //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
     {
       name: PROXY_GROUPS.TELEGRAM,
       icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
       type: "fallback",
-      url: SPEEDTEST_URL,
-      interval: 60,
-      tolerance: 20,
+      url: "https://api.telegram.org",
+      "expected-status": "404",
+      interval: 30,
+      timeout: 2500,
+      "max-failed-times": 1,
       lazy: true,
       proxies: telegramProxies,
     },
