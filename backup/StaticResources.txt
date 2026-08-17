@@ -1,14 +1,14 @@
 #########################################
 # Sukka's Ruleset - CDN Domains
-# Last Updated: 2026-08-09T16:01:36.426Z
-# Size: 4607
+# Last Updated: 2026-08-14T12:22:28.498Z
+# Size: 4627
 # License: AGPL 3.0
 # Homepage: https://ruleset.skk.moe
 # GitHub: https://github.com/SukkaW/Surge
 #
 # This file contains object storage and static assets CDN domains.
 #
-# $content-hash-v1$:hi3PyjlNIP7ZW-kS3RUoVc8Plg-k-7V_IqUbCmuF4Cw$
+# $content-hash-v1$:wLWHqOEcP7nENRf_7nDHBku3bzDKqXKADq-g5eHNaxU$
 #########################################
 7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
 0x0.st
@@ -421,6 +421,7 @@ cdn.css.net
 cdn.cuty.io
 cdn.fera.ai
 cdn.gist.ai
+cdn.id.life
 cdn.mer.run
 cdn.mida.so
 cdn.nba.com
@@ -494,6 +495,7 @@ ias.r10s.jp
 img.agrd.eu
 img.skk.moe
 img.toto.im
++.imgcdn8.com
 +.imgikzy.com
 +.imglink.win
 +.imgsmail.ru
@@ -722,6 +724,7 @@ js.upload.io
 +.line-cdn.net
 +.lllcdn.autos
 +.lowescdn.com
++.manuscdn.com
 media.dev.to
 media.fs.com
 media.mas.to
@@ -1280,6 +1283,7 @@ imgcn.bgmbk.tv
 imgs.plurk.com
 imgsrc.dmm.com
 +.infura-ipfs.io
++.insightcdn.net
 int.mwbbiz.com
 +.intercomcdn.io
 +.ipfs.infura.io
@@ -1310,6 +1314,7 @@ nel.heroku.com
 +.newscdn.com.au
 +.nincontent.com
 +.ninjastream.to
+node.windy.com
 null.jsbin.com
 optimizely.com
 +.patientpop.com
@@ -1457,6 +1462,7 @@ cdn.adguard.com
 cdn.adsninja.ca
 cdn.apponic.com
 cdn.aptoide.com
+cdn.bitrix24.eu
 cdn.bsky.social
 cdn.craft.cloud
 cdn.daradara.me
@@ -1561,6 +1567,7 @@ files.slack.com
 fonts.bunny.net
 fonts.gishan.cc
 fonts.upset.dev
+fonts.wd40.info
 +.gannett-cdn.com
 +.gauthstatic.com
 gdb.voanews.com
@@ -1619,6 +1626,7 @@ media.giphy.com
 media.licdn.com
 media.smooch.io
 media.tenor.com
+media.wd40.asia
 media.webtoo.ls
 media.wired.com
 metrics.kapa.ai
@@ -1778,6 +1786,7 @@ blob.jortage.com
 +.bugly.qcloud.com
 bundlephobia.com
 cache.ip-api.com
+cache.sgvafs.com
 +.capcutstatic.com
 cdn-1.porn87.com
 cdn-1.strava.com
@@ -1883,6 +1892,7 @@ fscdn.eppo.cloud
 +.getaroom-cdn.com
 gis.pinkbike.org
 +.githubassets.com
++.githubstatus.com
 +.glass.adidas.com
 glyph.medium.com
 gravatar.cat.net
@@ -2286,6 +2296,7 @@ image.xmanhua.net
 +.images-amazon.com
 images.carfax.com
 images.mattel.net
+images.motion.dev
 images.now-tv.com
 images.nvidia.com
 images.pexels.com
@@ -2374,6 +2385,7 @@ signal.cdnbye.com
 +.simplecastcdn.com
 +.slidesharecdn.com
 sp.streamlabs.com
++.spaceship-cdn.com
 st.codeforces.com
 st.deviantart.net
 static-id.fc2.com
@@ -2413,6 +2425,8 @@ static.tumblr.com
 static.vinted.com
 static.vocadb.net
 static.zaobao.com
+status.claude.com
+status.openai.com
 stbff.newfold.com
 +.steemitimages.com
 storage.ko-fi.com
@@ -2595,6 +2609,7 @@ img.4gamers.com.tw
 img.fastcybers.com
 img.hellofresh.com
 img.sparknotes.com
+imgproxy.windy.com
 imgrs.apkcombo.com
 imgs3.hcaptcha.com
 +.intercomassets.com
@@ -3156,6 +3171,7 @@ cdn9.bigcommerce.com
 cdnjs.cloudflare.com
 chart.googleapis.com
 +.cloud.influxdata.com
++.cloudflarestatus.com
 +.cloudflarestream.com
 +.cloudinary.vpsvc.com
 cms.socialinsider.io
@@ -3279,6 +3295,7 @@ shell.cdn.office.net
 sigma9.scpwikicn.com
 snippet.growsumo.com
 +.spreadshirtmedia.com
+sso-static.razer.com
 static-act.imoim.net
 static-cdn.123rf.com
 static-cdn.jtvnw.net
@@ -3298,6 +3315,7 @@ static.incapsula.com
 static.infomaniak.ch
 static.macupdate.com
 static.mediafire.com
+static.meteoblue.com
 static.mocortech.com
 static.newsbreak.com
 static.parallels.com
@@ -3372,6 +3390,7 @@ assets.sendinblue.com
 assets.tatlerasia.com
 assets.unicorn.studio
 assets.unredacted.org
+assets.userstyles.org
 assets.vodafone.co.uk
 assets0.headwayapp.co
 assets2.freshdesk.com
@@ -4238,6 +4257,7 @@ images3.cmp.optimizely.com
 images4.cmp.optimizely.com
 imgssl.constantcontact.com
 launchercontent.mojang.com
+maps-api-cdn.meteoblue.com
 mgx-backend-cdn.metadl.com
 mobilecenter.azureedge.net
 +.myanalytics.cdn.office.net
