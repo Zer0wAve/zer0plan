@@ -352,6 +352,7 @@ https://github.com/powerfullz/override-rules
         lazy: true
       },
       // 4. 故障转移（排除香港节点，HK易受GFW干扰不适合做fallback）
+      // 花云整体故障时应尽快切至 bkup：短间隔探测、单次失败即切换。
       {
         name: PROXY_GROUPS.FALLBACK,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
@@ -361,7 +362,9 @@ https://github.com/powerfullz/override-rules
           ...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`),
           ...hasBkup ? [PROXY_GROUPS.BKUP] : []
         ],
-        interval: 60,
+        interval: 15,
+        timeout: 2500,
+        "max-failed-times": 1,
         tolerance: 20,
         lazy: true
       },
@@ -479,15 +482,15 @@ https://github.com/powerfullz/override-rules
           filter: LOW_COST_NODE_MATCHER.pattern
         }
       }) : null,
-      // 15b. 备用节点 (conditional, url-test)
+      // 15b. 备用节点 (conditional, url-test). 预热 bkup，避免外层故障转移进入时才开始测速。
       bkupNodes.length > 0 ? {
         name: PROXY_GROUPS.BKUP,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
         type: "url-test",
         url: SPEEDTEST_URL,
-        interval: 60,
+        interval: 15,
         tolerance: 20,
-        lazy: true,
+        lazy: false,
         proxies: bkupNodes.map((node) => node.name).filter(isNotNull)
       } : null,
       // 16. E-Hentai
