@@ -1,6 +1,7 @@
 import { PROXY_GROUPS } from "./constants";
 
 const baseRules = [
+  `DOMAIN-SUFFIX,hybgzs.com,DIRECT`,
   `RULE-SET,zer0direct,DIRECT`,
   `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
   `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
