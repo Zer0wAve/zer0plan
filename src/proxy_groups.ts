@@ -91,7 +91,7 @@ export function buildProxyGroups({
     .filter((country) => countryNames.includes(country))
     .map((country) => `${country}${NODE_SUFFIX}`);
 
-  // Telegram 仅使用花云的指定出口，按固定顺序展开具体节点，末尾由独立 bkup 组兜底。
+  // Telegram 组优先提供总选择入口和 bkup，再按固定顺序展开花云具体节点。
   // fallback 会持续使用首个健康节点，只有不可用时才切换，避免 url-test 定时换节点中断 MTProto 长连接。
   const telegramPreferredCountries = [
     "香港",
@@ -101,13 +101,14 @@ export function buildProxyGroups({
     "新加坡",
   ];
   const telegramProxies = [
+    PROXY_GROUPS.SELECT,
+    ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
     ...telegramPreferredCountries.flatMap((country) =>
       (countryNodes[country] || [])
         .filter((node) => node.name?.startsWith("花云-"))
         .map((node) => node.name)
         .filter(isNotNull),
     ),
-    ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
   ];
 
   const groups: Array<ProxyGroup | null> = [

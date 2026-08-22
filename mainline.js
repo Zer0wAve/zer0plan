@@ -317,10 +317,11 @@ https://github.com/powerfullz/override-rules
       "新加坡"
     ];
     const telegramProxies = [
+      PROXY_GROUPS.SELECT,
+      ...hasBkup ? [PROXY_GROUPS.BKUP] : [],
       ...telegramPreferredCountries.flatMap(
         (country) => (countryNodes[country] || []).filter((node) => node.name?.startsWith("花云-")).map((node) => node.name).filter(isNotNull)
-      ),
-      ...hasBkup ? [PROXY_GROUPS.BKUP] : []
+      )
     ];
     const groups = [
       // 1. 选择代理
