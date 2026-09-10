@@ -91,8 +91,10 @@ export function buildProxyGroups({
     .filter((country) => countryNames.includes(country))
     .map((country) => `${country}${NODE_SUFFIX}`);
 
-  // Telegram 组优先提供总选择入口和 bkup，再按固定顺序展开花云具体节点。
-  // fallback 会持续使用首个健康节点，只有不可用时才切换，避免 url-test 定时换节点中断 MTProto 长连接。
+  // Telegram 组 = fallback，成员是具体节点（按国家优先级展开），最后兜底 故障转移。
+  // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
+  // 永远卡在竞速选出的坏节点上（曾实测卡大半天，Telegram 消息发不出）。
+  // 具体节点命中→持续使用（不打断 MTProto 长连接）；全失效→经 故障转移(含 bkup) 逃生。
   const telegramPreferredCountries = [
     "香港",
     "日本",
@@ -101,14 +103,13 @@ export function buildProxyGroups({
     "新加坡",
   ];
   const telegramProxies = [
-    PROXY_GROUPS.SELECT,
-    ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
     ...telegramPreferredCountries.flatMap((country) =>
       (countryNodes[country] || [])
         .filter((node) => node.name?.startsWith("花云-"))
         .map((node) => node.name)
         .filter(isNotNull),
     ),
+    PROXY_GROUPS.FALLBACK,
   ];
 
   const groups: Array<ProxyGroup | null> = [
