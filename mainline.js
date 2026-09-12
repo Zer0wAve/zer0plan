@@ -650,6 +650,7 @@ https://github.com/powerfullz/override-rules
         `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
+        `DOMAIN-SUFFIX,opencode.ai,${PROXY_GROUPS.AI_SERVICE}`,
         `GEOSITE,category-ai-!cn,${PROXY_GROUPS.AI_SERVICE}`,
         `RULE-SET,BiliIntl,${PROXY_GROUPS.BILIBILI}`,
         `GEOSITE,youtube,${PROXY_GROUPS.VIDEO}`,
