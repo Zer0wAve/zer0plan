@@ -675,7 +675,7 @@ https://github.com/powerfullz/override-rules
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
         `GEOIP,private,DIRECT,no-resolve`,
-        `GEOIP,cn,DIRECT`,
+        `GEOIP,cn,DIRECT,no-resolve`,
         `MATCH,${PROXY_GROUPS.FINAL}`
       ];
     }
@@ -817,10 +817,6 @@ https://github.com/powerfullz/override-rules
       "enhanced-mode": mode,
       "default-nameserver": ["223.5.5.5", "119.29.29.29"],
       nameserver: ["223.5.5.5", "119.29.29.29"],
-      fallback: [
-        "https://dns.cloudflare.com/dns-query",
-        "https://dns.google/dns-query"
-      ],
       "proxy-server-nameserver": [
         "https://dns.alidns.com/dns-query",
         "https://doh.pub/dns-query"

@@ -34,7 +34,7 @@ const baseRules = [
   `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
   `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
   `GEOIP,private,DIRECT,no-resolve`,
-  `GEOIP,cn,DIRECT`,
+  `GEOIP,cn,DIRECT,no-resolve`,
   `MATCH,${PROXY_GROUPS.FINAL}`,
 ];
 

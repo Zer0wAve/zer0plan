@@ -114,7 +114,7 @@ export interface DnsConfig {
     "enhanced-mode": "redir-host" | "fake-ip";
     "default-nameserver": string[];
     nameserver: string[];
-    fallback: string[];
+    fallback?: string[];
     "proxy-server-nameserver": string[];
     "fake-ip-filter"?: string[];
 }
