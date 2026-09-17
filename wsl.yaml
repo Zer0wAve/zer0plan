@@ -12,3 +12,6 @@ log-level: info
 external-controller: 0.0.0.0:15397
 # secret: 本地配置时自行填写，勿提交到仓库
 external-ui: /home/hululu/workspace/mihomo/ui
+dns:
+  nameserver-policy:
+    '+.day.app': '223.5.5.5'
