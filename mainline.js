@@ -643,8 +643,9 @@ https://github.com/powerfullz/override-rules
       init_constants();
       baseRules = [
         `DOMAIN-SUFFIX,hybgzs.com,DIRECT`,
-        `RULE-SET,zer0direct,DIRECT`,
+        // Explicit proxy exceptions take precedence over broad direct domains.
         `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
+        `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
         `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
         `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
