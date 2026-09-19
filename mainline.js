@@ -989,20 +989,20 @@ https://github.com/powerfullz/override-rules
           return {};
         }
       }
-      var rawArgs = getRawArgs();
-      var {
-        groupType,
-        ipv6Enabled,
-        fullConfig,
-        keepAliveEnabled,
-        fakeIPEnabled,
-        quicEnabled,
-        regexFilter,
-        tunEnabled,
-        countryThreshold,
-        processRulesEnabled
-      } = buildFeatureFlags(rawArgs);
       function main(config) {
+        const rawArgs = getRawArgs();
+        const {
+          groupType,
+          ipv6Enabled,
+          fullConfig,
+          keepAliveEnabled,
+          fakeIPEnabled,
+          quicEnabled,
+          regexFilter,
+          tunEnabled,
+          countryThreshold,
+          processRulesEnabled
+        } = buildFeatureFlags(rawArgs);
         if (!config.proxies || !Array.isArray(config.proxies)) {
           throw new Error("[powerfullz 的覆写脚本] 错误：Clash 配置中缺少有效的 proxies 字段");
         }
