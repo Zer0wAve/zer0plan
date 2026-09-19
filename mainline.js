@@ -14,6 +14,7 @@ https://github.com/powerfullz/override-rules
 - quic: 允许 QUIC 流量（UDP 443，默认 false）
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
+- process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
 
 源码已迁移至 `src/*.ts`。
 */
@@ -233,6 +234,7 @@ https://github.com/powerfullz/override-rules
       quicEnabled: parseBool(args.quic),
       regexFilter: parseBool(args.regex),
       tunEnabled: parseBool(args.tun),
+      processRulesEnabled: parseBool(args.process),
       countryThreshold: parseNumber(args.threshold, 2)
     };
   }
@@ -611,11 +613,11 @@ https://github.com/powerfullz/override-rules
 
   // src/rules.ts
   function buildRules({
-    quicEnabled
+    processRulesEnabled
   }) {
-    return [...baseRules];
+    return processRulesEnabled ? [...processDirectRules, ...baseRules] : [...baseRules];
   }
-  var baseRules;
+  var baseRules, processDirectRules;
   var init_rules = __esm({
     "src/rules.ts"() {
       "use strict";
@@ -656,6 +658,26 @@ https://github.com/powerfullz/override-rules
         `GEOIP,private,DIRECT,no-resolve`,
         `GEOIP,cn,DIRECT,no-resolve`,
         `MATCH,${PROXY_GROUPS.FINAL}`
+      ];
+      processDirectRules = [
+        "PROCESS-NAME,v2ray,DIRECT",
+        "PROCESS-NAME,Surge,DIRECT",
+        "PROCESS-NAME,ss-local,DIRECT",
+        "PROCESS-NAME,privoxy,DIRECT",
+        "PROCESS-NAME,trojan,DIRECT",
+        "PROCESS-NAME,trojan-go,DIRECT",
+        "PROCESS-NAME,naive,DIRECT",
+        "PROCESS-NAME,CloudflareWARP,DIRECT",
+        "PROCESS-NAME,Cloudflare WARP,DIRECT",
+        "PROCESS-NAME,p4pclient,DIRECT",
+        "PROCESS-NAME,qbittorrent,DIRECT",
+        "PROCESS-NAME,Transmission,DIRECT",
+        "PROCESS-NAME,aria2c,DIRECT",
+        "PROCESS-NAME,fdm,DIRECT",
+        "PROCESS-NAME,uTorrent,DIRECT",
+        "PROCESS-NAME,WebTorrent,DIRECT",
+        "PROCESS-NAME,Thunder,DIRECT",
+        "PROCESS-NAME,DownloadService,DIRECT"
       ];
     }
   });
@@ -977,7 +999,8 @@ https://github.com/powerfullz/override-rules
         quicEnabled,
         regexFilter,
         tunEnabled,
-        countryThreshold
+        countryThreshold,
+        processRulesEnabled
       } = buildFeatureFlags(rawArgs);
       function main(config) {
         if (!config.proxies || !Array.isArray(config.proxies)) {
@@ -1028,7 +1051,7 @@ https://github.com/powerfullz/override-rules
           type: "select",
           proxies: globalProxies
         });
-        const finalRules = buildRules({ quicEnabled });
+        const finalRules = buildRules({ processRulesEnabled });
         return {
           ...fullConfig && {
             "mixed-port": 7890,
@@ -1041,13 +1064,14 @@ https://github.com/powerfullz/override-rules
             mode: "rule",
             "unified-delay": true,
             "tcp-concurrent": true,
-            "find-process-mode": "off",
+            "find-process-mode": processRulesEnabled ? "strict" : "off",
             "log-level": "info",
             "geodata-loader": "standard",
             "external-controller": ":9999",
             "disable-keep-alive": !keepAliveEnabled,
             profile: { "store-selected": true }
           },
+          ...processRulesEnabled && { "find-process-mode": "strict" },
           rules: finalRules,
           sniffer: snifferConfig,
           dns: buildDns({ fakeIPEnabled, ipv6Enabled }),

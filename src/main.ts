@@ -14,6 +14,7 @@ https://github.com/powerfullz/override-rules
 - quic: 允许 QUIC 流量（UDP 443，默认 false）
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
+- process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
 
 源码已迁移至 `src/*.ts`。
 */
@@ -64,6 +65,7 @@ const {
     regexFilter,
     tunEnabled,
     countryThreshold,
+    processRulesEnabled,
 } = buildFeatureFlags(rawArgs);
 
 function main(config: ClashConfig): ClashConfig {
@@ -119,7 +121,7 @@ function main(config: ClashConfig): ClashConfig {
         proxies: globalProxies,
     });
 
-    const finalRules = buildRules({ quicEnabled });
+    const finalRules = buildRules({ processRulesEnabled });
 
     return {
         ...(fullConfig && {
@@ -133,13 +135,14 @@ function main(config: ClashConfig): ClashConfig {
             mode: "rule",
             "unified-delay": true,
             "tcp-concurrent": true,
-            "find-process-mode": "off",
+            "find-process-mode": processRulesEnabled ? "strict" : "off",
             "log-level": "info",
             "geodata-loader": "standard",
             "external-controller": ":9999",
             "disable-keep-alive": !keepAliveEnabled,
             profile: { "store-selected": true },
         }),
+        ...(processRulesEnabled && { "find-process-mode": "strict" as const }),
         rules: finalRules,
         sniffer: snifferConfig,
         dns: buildDns({ fakeIPEnabled, ipv6Enabled }),

@@ -38,17 +38,40 @@ const baseRules = [
   `MATCH,${PROXY_GROUPS.FINAL}`,
 ];
 
+const processDirectRules = [
+  "PROCESS-NAME,v2ray,DIRECT",
+  "PROCESS-NAME,Surge,DIRECT",
+  "PROCESS-NAME,ss-local,DIRECT",
+  "PROCESS-NAME,privoxy,DIRECT",
+  "PROCESS-NAME,trojan,DIRECT",
+  "PROCESS-NAME,trojan-go,DIRECT",
+  "PROCESS-NAME,naive,DIRECT",
+  "PROCESS-NAME,CloudflareWARP,DIRECT",
+  "PROCESS-NAME,Cloudflare WARP,DIRECT",
+  "PROCESS-NAME,p4pclient,DIRECT",
+  "PROCESS-NAME,qbittorrent,DIRECT",
+  "PROCESS-NAME,Transmission,DIRECT",
+  "PROCESS-NAME,aria2c,DIRECT",
+  "PROCESS-NAME,fdm,DIRECT",
+  "PROCESS-NAME,uTorrent,DIRECT",
+  "PROCESS-NAME,WebTorrent,DIRECT",
+  "PROCESS-NAME,Thunder,DIRECT",
+  "PROCESS-NAME,DownloadService,DIRECT",
+];
+
 /**
  * 构建最终的规则列表。
  *
  * @param {Object} params - 构建参数
- * @param {boolean} params.quicEnabled - 是否启用 QUIC（如未启用会插入 UDP:443 拦截规则）
+ * @param {boolean} params.processRulesEnabled - 是否加入桌面端进程直连规则
  * @returns {string[]} 规则字符串数组
  */
 export function buildRules({
-  quicEnabled,
+  processRulesEnabled,
 }: {
-  quicEnabled: boolean;
+  processRulesEnabled: boolean;
 }): string[] {
-  return [...baseRules];
+  return processRulesEnabled
+    ? [...processDirectRules, ...baseRules]
+    : [...baseRules];
 }

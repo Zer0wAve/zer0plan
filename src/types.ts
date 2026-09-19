@@ -9,6 +9,7 @@ export interface ScriptArgs {
     regex?: string;
     threshold?: string;
     tun?: string;
+    process?: string;
 }
 
 export type GroupType = 0 | 1 | 2;
@@ -23,6 +24,7 @@ export interface FeatureFlags {
     regexFilter: boolean;
     countryThreshold: number;
     tunEnabled: boolean;
+    processRulesEnabled: boolean;
 }
 
 export interface ProxyNode {
