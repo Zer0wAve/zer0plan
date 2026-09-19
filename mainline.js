@@ -613,28 +613,7 @@ https://github.com/powerfullz/override-rules
   function buildRules({
     quicEnabled
   }) {
-    const ruleList = [...baseRules];
-    ruleList.unshift(
-      "PROCESS-NAME,v2ray,DIRECT",
-      "PROCESS-NAME,Surge,DIRECT",
-      "PROCESS-NAME,ss-local,DIRECT",
-      "PROCESS-NAME,privoxy,DIRECT",
-      "PROCESS-NAME,trojan,DIRECT",
-      "PROCESS-NAME,trojan-go,DIRECT",
-      "PROCESS-NAME,naive,DIRECT",
-      "PROCESS-NAME,CloudflareWARP,DIRECT",
-      "PROCESS-NAME,Cloudflare WARP,DIRECT",
-      "PROCESS-NAME,p4pclient,DIRECT",
-      "PROCESS-NAME,qbittorrent,DIRECT",
-      "PROCESS-NAME,Transmission,DIRECT",
-      "PROCESS-NAME,aria2c,DIRECT",
-      "PROCESS-NAME,fdm,DIRECT",
-      "PROCESS-NAME,uTorrent,DIRECT",
-      "PROCESS-NAME,WebTorrent,DIRECT",
-      "PROCESS-NAME,Thunder,DIRECT",
-      "PROCESS-NAME,DownloadService,DIRECT"
-    );
-    return ruleList;
+    return [...baseRules];
   }
   var baseRules;
   var init_rules = __esm({
@@ -642,7 +621,6 @@ https://github.com/powerfullz/override-rules
       "use strict";
       init_constants();
       baseRules = [
-        `DOMAIN-SUFFIX,hybgzs.com,DIRECT`,
         // Explicit proxy exceptions take precedence over broad direct domains.
         `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,zer0direct,DIRECT`,

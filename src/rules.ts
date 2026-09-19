@@ -1,7 +1,6 @@
 import { PROXY_GROUPS } from "./constants";
 
 const baseRules = [
-  `DOMAIN-SUFFIX,hybgzs.com,DIRECT`,
   // Explicit proxy exceptions take precedence over broad direct domains.
   `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
   `RULE-SET,zer0direct,DIRECT`,
@@ -51,27 +50,5 @@ export function buildRules({
 }: {
   quicEnabled: boolean;
 }): string[] {
-  const ruleList = [...baseRules];
-  // 进程直连规则（防代理环路 + 下载工具直连，桌面 mihomo 生效）
-  ruleList.unshift(
-    "PROCESS-NAME,v2ray,DIRECT",
-    "PROCESS-NAME,Surge,DIRECT",
-    "PROCESS-NAME,ss-local,DIRECT",
-    "PROCESS-NAME,privoxy,DIRECT",
-    "PROCESS-NAME,trojan,DIRECT",
-    "PROCESS-NAME,trojan-go,DIRECT",
-    "PROCESS-NAME,naive,DIRECT",
-    "PROCESS-NAME,CloudflareWARP,DIRECT",
-    "PROCESS-NAME,Cloudflare WARP,DIRECT",
-    "PROCESS-NAME,p4pclient,DIRECT",
-    "PROCESS-NAME,qbittorrent,DIRECT",
-    "PROCESS-NAME,Transmission,DIRECT",
-    "PROCESS-NAME,aria2c,DIRECT",
-    "PROCESS-NAME,fdm,DIRECT",
-    "PROCESS-NAME,uTorrent,DIRECT",
-    "PROCESS-NAME,WebTorrent,DIRECT",
-    "PROCESS-NAME,Thunder,DIRECT",
-    "PROCESS-NAME,DownloadService,DIRECT",
-  );
-  return ruleList;
+  return [...baseRules];
 }
