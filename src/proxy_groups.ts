@@ -105,7 +105,7 @@ export function buildProxyGroups({
   const telegramProxies = [
     ...telegramPreferredCountries.flatMap((country) =>
       (countryNodes[country] || [])
-        .filter((node) => node.name?.startsWith("花云-"))
+        .filter((node) => node.name?.startsWith("花云-") && !node.name?.includes("实验性"))
         .map((node) => node.name)
         .filter(isNotNull),
     ),

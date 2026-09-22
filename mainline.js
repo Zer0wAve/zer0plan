@@ -320,7 +320,7 @@ https://github.com/powerfullz/override-rules
     ];
     const telegramProxies = [
       ...telegramPreferredCountries.flatMap(
-        (country) => (countryNodes[country] || []).filter((node) => node.name?.startsWith("花云-")).map((node) => node.name).filter(isNotNull)
+        (country) => (countryNodes[country] || []).filter((node) => node.name?.startsWith("花云-") && !node.name?.includes("实验性")).map((node) => node.name).filter(isNotNull)
       ),
       PROXY_GROUPS.FALLBACK
     ];
