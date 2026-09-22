@@ -106,6 +106,12 @@ export function buildProxyGroups({
     ...telegramPreferredCountries.flatMap((country) =>
       (countryNodes[country] || [])
         .filter((node) => node.name?.startsWith("花云-") && !node.name?.includes("实验性"))
+        .sort((a, b) => {
+          // 优先高级专线，其次标准专线
+          const aAdv = a.name?.includes("高级") ? 1 : 0;
+          const bAdv = b.name?.includes("高级") ? 1 : 0;
+          return bAdv - aAdv;
+        })
         .map((node) => node.name)
         .filter(isNotNull),
     ),
