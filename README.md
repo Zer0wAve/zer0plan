@@ -79,9 +79,16 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
 | `regex` | 正则过滤模式 | `false` |
 | `process` | 加入桌面端 `PROCESS-NAME` 直连规则；iOS Stash 保持关闭 | `false` |
 
-`process` 是显式平台开关：在 SubStore 文件的主 JS「脚本操作 → 参数」中设置 `process`。iOS Stash 填 `false`（或不填）；桌面 Mihomo 填 `true`。对应 `$arguments` 对象为 `{ "process": "true" }`，不是在脚本正文里改代码。开启时生成 18 条进程直连规则并设置 `find-process-mode: strict`。
+`process` 是显式平台开关，在 SubStore 的「脚本操作」中配置。**传参方式取决于脚本的加载模式**：
 
-WSL 也使用主 JS 参数 `process=true`；`wsl.yaml` 不再重复插入进程规则。
+- **链接模式（`mode: link`，即填 URL）**：参数必须写在 URL 的 **`#` 片段**里，SubStore 会忽略该操作的 `arguments` 字段。
+  ```
+  https://raw.githubusercontent.com/Zer0wAve/zer0plan/main/mainline.min.js#process=true
+  ```
+  iOS Stash 用 `#process=false`（或不写片段，默认即 false）。
+- **脚本模式（`mode: script`，即直接粘代码）**：参数写在 `arguments` 字段，值为字符串 `"true"` / `"false"`。
+
+开启后会在规则顶部插入 18 条进程直连规则，并设置 `find-process-mode: strict`。桌面端 `wsl.yaml` 不再重复插入这些规则。
 
 ## 更新 zer0direct
 
