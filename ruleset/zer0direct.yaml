@@ -3,6 +3,21 @@ payload:
   - '+.dpdns.org'
   - '+.youko.cc.cd'
   - '+.okemby.org'
+  # ── Emby / Emos 公共反代（实测存活的精确域名）──
+  # 这些站走 Cloudflare 优选 IP，GEOIP 会判成非大陆而落到 Final 走代理，
+  # 结果绕远出口反而更慢/失败；必须强制直连。
+  # 公共共享后缀（eu.org / indevs.in / qzz.io）只写精确主机名，避免误伤同后缀的其他服务。
+  - okemby.wangjunqiang.indevs.in
+  - okemby.wangjunqiang.dev
+  - emos.wangjunqiang.indevs.in
+  - emos.goldenarch.qzz.io
+  - emby.smartstart.eu.org
+  # 专属数字域：用 +. 以防站点轮换子域
+  - '+.200038.xyz'
+  - '+.137127.xyz'
+  - '+.660990.xyz'
+  - '+.255432.xyz'
+  - '+.030666.xyz'
   - '+.hdkyl.in'
   - '+.piggo.me'
   - '+.hypergryph.com'
