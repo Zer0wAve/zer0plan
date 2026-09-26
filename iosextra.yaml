@@ -25,6 +25,15 @@ disable-keep-alive: false
 #     - https://dns.alidns.com/dns-query
 #     - https://doh.pub/dns-query
 
+# ===== 静态域名映射 =====
+# 把 tailnet 域名固定到内网 IP，避免在家庭内网时还要经 Tailscale DNS 解析。
+# 注意：这里解析为 192.168.0.x，因此必须能在内网直连；离开内网后应依赖
+# Tailscale 自身的 MagicDNS（下面的 hosts 会在任何网络下都生效，故仅在你
+# 确认这些 IP 可达时才保留）。
+hosts:
+  hululupc.hen-avior.ts.net: 192.168.0.198
+  ds224.hen-avior.ts.net: 192.168.0.224
+
 # ===== 在 proxies 最前面插入 Tailscale 节点 =====
 +proxies:
   - name: Homesweethome
