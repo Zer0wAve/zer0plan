@@ -15,6 +15,7 @@ https://github.com/powerfullz/override-rules
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
 - process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
+- telegram: 传 manual 时 Telegram 组纳入「实验性」低倍率节点并置顶（手机在 Telegram 内看视频省流量；默认排除）
 
 源码已迁移至 `src/*.ts`。
 */
@@ -67,6 +68,7 @@ function main(config: ClashConfig): ClashConfig {
         tunEnabled,
         countryThreshold,
         processRulesEnabled,
+        telegramManual,
     } = buildFeatureFlags(rawArgs);
 
     if (!config.proxies || !Array.isArray(config.proxies)) {
@@ -110,6 +112,7 @@ function main(config: ClashConfig): ClashConfig {
         defaultSelector,
         defaultFallback,
         frontProxySelector,
+        telegramManual,
     });
 
     const globalProxies = proxyGroups.map((item) => String(item.name));

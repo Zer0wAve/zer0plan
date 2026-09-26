@@ -78,6 +78,7 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
 | `threshold` | 地区节点最小阈值 | `2` |
 | `regex` | 正则过滤模式 | `false` |
 | `process` | 加入桌面端 `PROCESS-NAME` 直连规则；iOS Stash 保持关闭 | `false` |
+| `telegram` | 值为 `manual` 时，Telegram 组纳入「实验性」低倍率节点并**置顶优先**（手机在 Telegram 内看视频省流量）；其他值/不传则排除 | 空 |
 
 `process` 是显式平台开关，在 SubStore 的「脚本操作」中配置。**传参方式取决于脚本的加载模式**：
 

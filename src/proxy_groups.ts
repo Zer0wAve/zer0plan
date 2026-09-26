@@ -6,7 +6,12 @@ import {
   PROXY_GROUPS,
   countriesMeta,
 } from "./constants";
-import type { BuildProxyGroupsInput, GroupType, ProxyGroup } from "./types";
+import type {
+  BuildProxyGroupsInput,
+  GroupType,
+  ProxyGroup,
+  ProxyNode,
+} from "./types";
 import { isNotNull } from "./utils";
 
 interface BuildGroupByTypeInput {
@@ -69,6 +74,7 @@ export function buildProxyGroups({
   defaultSelector,
   defaultFallback,
   frontProxySelector,
+  telegramManual,
 }: BuildProxyGroupsInput): ProxyGroup[] {
   const hasTW = countryNames.includes("台湾");
   const hasHK = countryNames.includes("香港");
@@ -102,19 +108,42 @@ export function buildProxyGroups({
     "美国",
     "新加坡",
   ];
+
+  const isFlowerNode = (node: ProxyNode) => Boolean(node.name?.startsWith("花云-"));
+  const isExperimental = (node: ProxyNode) => Boolean(node.name?.includes("实验性"));
+  const isAdvanced = (node: ProxyNode) => Boolean(node.name?.includes("高级"));
+
+  // 每个优先国家内的候选节点（实验性节点仅在手机手动模式下纳入）。
+  const telegramCandidatesByCountry = telegramPreferredCountries.map((country) =>
+    (countryNodes[country] || [])
+      .filter(
+        (node) =>
+          isFlowerNode(node) && (telegramManual || !isExperimental(node)),
+      )
+      .sort((a, b) => {
+        // 国家内优先级：实验性(低倍率) > 高级 > 标准
+        const rank = (node: ProxyNode) =>
+          isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
+        return rank(a) - rank(b);
+      }),
+  );
+
+  // Telegram 组是 fallback：只取第一个健康节点，且无法手动切换。
+  // 故低倍率(实验性)节点必须整体前置才真正生效，全不可用时自动回落到高级/标准。
+  // 注意：实验性节点每个国家各一个，若只做「国家内前置」，排在首个国家之后的低倍率
+  // 节点会被前面的付费节点挡住而永不启用 —— 因此把全部低倍率节点提到整体最前。
+  const telegramLowCostFirst = telegramCandidatesByCountry
+    .flatMap((nodes) => nodes.filter(isExperimental))
+    .map((node) => node.name)
+    .filter(isNotNull);
+  const telegramRegular = telegramCandidatesByCountry
+    .flatMap((nodes) => nodes.filter((node) => !isExperimental(node)))
+    .map((node) => node.name)
+    .filter(isNotNull);
+
   const telegramProxies = [
-    ...telegramPreferredCountries.flatMap((country) =>
-      (countryNodes[country] || [])
-        .filter((node) => node.name?.startsWith("花云-") && !node.name?.includes("实验性"))
-        .sort((a, b) => {
-          // 优先高级专线，其次标准专线
-          const aAdv = a.name?.includes("高级") ? 1 : 0;
-          const bAdv = b.name?.includes("高级") ? 1 : 0;
-          return bAdv - aAdv;
-        })
-        .map((node) => node.name)
-        .filter(isNotNull),
-    ),
+    ...telegramLowCostFirst,
+    ...telegramRegular,
     PROXY_GROUPS.FALLBACK,
   ];
 

@@ -10,6 +10,7 @@ export interface ScriptArgs {
     threshold?: string;
     tun?: string;
     process?: string;
+    telegram?: string;
 }
 
 export type GroupType = 0 | 1 | 2;
@@ -25,6 +26,7 @@ export interface FeatureFlags {
     countryThreshold: number;
     tunEnabled: boolean;
     processRulesEnabled: boolean;
+    telegramManual: boolean;
 }
 
 export interface ProxyNode {
@@ -219,4 +221,5 @@ export interface BuildProxyGroupsInput {
     defaultSelector: string[];
     defaultFallback: string[];
     frontProxySelector: string[];
+    telegramManual: boolean;
 }

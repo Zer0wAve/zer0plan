@@ -33,6 +33,7 @@ export function buildFeatureFlags(args: ScriptArgs): FeatureFlags {
         regexFilter: parseBool(args.regex),
         tunEnabled: parseBool(args.tun),
         processRulesEnabled: parseBool(args.process),
+        telegramManual: String(args.telegram ?? "").toLowerCase() === "manual",
         countryThreshold: parseNumber(args.threshold, 2),
     };
 }

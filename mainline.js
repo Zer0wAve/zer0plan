@@ -15,6 +15,7 @@ https://github.com/powerfullz/override-rules
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
 - process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
+- telegram: 传 manual 时 Telegram 组纳入「实验性」低倍率节点并置顶（手机在 Telegram 内看视频省流量；默认排除）
 
 源码已迁移至 `src/*.ts`。
 */
@@ -235,6 +236,7 @@ https://github.com/powerfullz/override-rules
       regexFilter: parseBool(args.regex),
       tunEnabled: parseBool(args.tun),
       processRulesEnabled: parseBool(args.process),
+      telegramManual: String(args.telegram ?? "").toLowerCase() === "manual",
       countryThreshold: parseNumber(args.threshold, 2)
     };
   }
@@ -294,7 +296,8 @@ https://github.com/powerfullz/override-rules
     defaultProxiesDirect,
     defaultSelector,
     defaultFallback,
-    frontProxySelector
+    frontProxySelector,
+    telegramManual
   }) {
     const hasTW = countryNames.includes("台湾");
     const hasHK = countryNames.includes("香港");
@@ -318,14 +321,22 @@ https://github.com/powerfullz/override-rules
       "美国",
       "新加坡"
     ];
+    const isFlowerNode = (node) => Boolean(node.name?.startsWith("花云-"));
+    const isExperimental = (node) => Boolean(node.name?.includes("实验性"));
+    const isAdvanced = (node) => Boolean(node.name?.includes("高级"));
+    const telegramCandidatesByCountry = telegramPreferredCountries.map(
+      (country) => (countryNodes[country] || []).filter(
+        (node) => isFlowerNode(node) && (telegramManual || !isExperimental(node))
+      ).sort((a, b) => {
+        const rank = (node) => isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
+        return rank(a) - rank(b);
+      })
+    );
+    const telegramLowCostFirst = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter(isExperimental)).map((node) => node.name).filter(isNotNull);
+    const telegramRegular = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter((node) => !isExperimental(node))).map((node) => node.name).filter(isNotNull);
     const telegramProxies = [
-      ...telegramPreferredCountries.flatMap(
-        (country) => (countryNodes[country] || []).filter((node) => node.name?.startsWith("花云-") && !node.name?.includes("实验性")).sort((a, b) => {
-          const aAdv = a.name?.includes("高级") ? 1 : 0;
-          const bAdv = b.name?.includes("高级") ? 1 : 0;
-          return bAdv - aAdv;
-        }).map((node) => node.name).filter(isNotNull)
-      ),
+      ...telegramLowCostFirst,
+      ...telegramRegular,
       PROXY_GROUPS.FALLBACK
     ];
     const groups = [
@@ -1006,7 +1017,8 @@ https://github.com/powerfullz/override-rules
           regexFilter,
           tunEnabled,
           countryThreshold,
-          processRulesEnabled
+          processRulesEnabled,
+          telegramManual
         } = buildFeatureFlags(rawArgs);
         if (!config.proxies || !Array.isArray(config.proxies)) {
           throw new Error("[powerfullz 的覆写脚本] 错误：Clash 配置中缺少有效的 proxies 字段");
@@ -1046,7 +1058,8 @@ https://github.com/powerfullz/override-rules
           defaultProxiesDirect,
           defaultSelector,
           defaultFallback,
-          frontProxySelector
+          frontProxySelector,
+          telegramManual
         });
         const globalProxies = proxyGroups.map((item) => String(item.name));
         proxyGroups.push({
