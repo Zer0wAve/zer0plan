@@ -65,8 +65,8 @@ script:
 # ===== 在 rules 头部追加局域网直连规则 + QUIC 屏蔽 =====
 +rules:
   - SCRIPT,quic,REJECT
-  - DOMAIN-SUFFIX,hen-avior.ts.net,Homeland
-  - IP-CIDR,100.64.0.0/10,Homeland
+  # 不再需要 DOMAIN-SUFFIX,hen-avior.ts.net 与 IP-CIDR,100.64.0.0/10：
+  # Stash 现在原生识别 Tailscale，MagicDNS 域名与 CGNAT 地址会自动走 tailscale。
   # 家庭内网只有 192.168.0.0/24 这一个网段（PC .198 / NAS .224）。
-  # 收窄到 /24，避免把其它 192.168.x 的地址也误送进 Homeland。
+  # 该网段不属于 tailnet，Stash 不会自动识别，故仍需显式规则。
   - IP-CIDR,192.168.0.0/24,Homeland
