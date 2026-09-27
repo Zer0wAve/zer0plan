@@ -646,7 +646,10 @@ https://github.com/powerfullz/override-rules
         `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
+        // Hand-added AI domains that GEOSITE,category-ai-!cn does not carry yet.
+        // Remove once upstream geosite includes them.
         `DOMAIN-SUFFIX,opencode.ai,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN-SUFFIX,muse.ai,${PROXY_GROUPS.AI_SERVICE}`,
         `GEOSITE,category-ai-!cn,${PROXY_GROUPS.AI_SERVICE}`,
         `RULE-SET,BiliIntl,${PROXY_GROUPS.BILIBILI}`,
         `GEOSITE,youtube,${PROXY_GROUPS.VIDEO}`,
