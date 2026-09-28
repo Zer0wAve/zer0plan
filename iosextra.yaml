@@ -77,11 +77,9 @@ script:
   # 家庭内网只有 192.168.0.0/24 这一个网段（PC .198 / NAS .224）。
   # 该网段不属于 tailnet，Stash 不会自动识别，故仍需显式规则。
   - IP-CIDR,192.168.0.0/24,Homeland
-  # 【临时方案】Stash 把 fake-ip 地址（198.18.0.0/15）当真实目标 IP 交给
-  # GEOIP,private 判定，于是任何「未命中域名规则」的流量都会先撞上
-  # GEOIP,private → DIRECT，MATCH,Final 永远轮不到，新域名走不了代理。
-  # metaaivm.com 正是被这个问题吞掉的一个（Meta 系域名，get 到 FACEBOOK 段，
-  # 正常应走 AI 组）。这里用显式域名规则排在 GEOIP,private 之前兜住它。
-  # TODO(临时)：Stash 修好 fake-ip 与 no-resolve 的交互后（已上报），
-  # 这一条应删除，改由 GEOSITE 正常分流。
+  # 【临时方案】metaaivm.com 在 Stash 上被判为 GEOIP [PRIVATE] 而走 DIRECT，
+  # 实为 Stash 侧的处理问题（已由用户上报作者；该规则在 mihomo 上工作正常）。
+  # 这里用显式域名规则兜住它（DOMAIN-SUFFIX 覆盖整棵子域树），
+  # 排在 GEOIP,private 之前即可命中，不必等上游收录或 Stash 修复。
+  # TODO(临时)：Stash 修复后可删除本条；仅存在于手机端 Stash 覆写，不影响桌面 mihomo。
   - DOMAIN-SUFFIX,metaaivm.com,AI服务
