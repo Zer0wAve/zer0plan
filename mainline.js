@@ -675,7 +675,9 @@ https://github.com/powerfullz/override-rules
         `RULE-SET,Crypto,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,GFWList,${PROXY_GROUPS.SELECT}`,
         `GEOIP,private,DIRECT,no-resolve`,
-        `GEOIP,cn,DIRECT,no-resolve`,
+        // 注意：GEOIP,cn 不能带 no-resolve。系统代理模式下客户端只给域名、不给 IP，
+        // no-resolve 会让该域名根本没有 IP 可比 → 规则被跳过 → 国内域名落到 MATCH,Final 走代理。
+        `GEOIP,cn,DIRECT`,
         `MATCH,${PROXY_GROUPS.FINAL}`
       ];
       processDirectRules = [
