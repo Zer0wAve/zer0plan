@@ -56,6 +56,13 @@ hosts:
     proxies:
       - Homesweethome
     hidden: true
+  # 临时方案：Stash 内部某些机制/规则会把流量分流到 PROXY，
+  # 配置中原本无此组，这里建立 PROXY 组直接接入 Final（MATCH 组），防止报错或漏流。
+  - name: PROXY
+    type: select
+    proxies:
+      - Final
+    hidden: true
 
 # ===== QUIC 屏蔽（Stash Script Shortcuts，比 AND 规则更高效）=====
 script:
