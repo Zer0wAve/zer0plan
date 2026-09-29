@@ -25,19 +25,11 @@ disable-keep-alive: false
 #     - https://dns.alidns.com/dns-query
 #     - https://doh.pub/dns-query
 
-# ===== 静态域名映射【临时方案，待 Stash 修复 MagicDNS 后移除】=====
-# 背景：Stash 的 Tailscale MagicDNS 解析有问题，导致 ts.net 域名不能在
-# 内网正确解析到内网 IP，因此这里手工把两个域名钉到内网地址。
-#
-# TODO(临时)：Stash 修好 MagicDNS 后，整段 hosts: 应删除，改由 MagicDNS 解析。
-# 届时 lan-relay 不需要撤（它解决的是「serve 只监听 tailnet 口」这个独立问题）。
-#
-# 注意：这里解析为 192.168.0.x，因此必须能在内网直连；离开内网后应依赖
-# Tailscale 自身的 MagicDNS（下面的 hosts 在任何网络下都生效，故仅在你
-# 确认这些 IP 可达时才保留）。
-hosts:
-  hululupc.hen-avior.ts.net: 192.168.0.198
-  ds224.hen-avior.ts.net: 192.168.0.224
+# ===== 静态域名映射：已删除（2026-09）=====
+# Stash 新版已原生支持 Tailscale MagicDNS，hululupc/ds224.hen-avior.ts.net
+# 不再需要手工钉到 192.168.0.x，改由 MagicDNS 解析（→ 100.x tailnet 地址）。
+# 勿再加回 hosts: —— 它会覆盖 MagicDNS 且只在 192.168.0.x 可达时才有意义。
+# 注意：lan-relay 不撤（它解决的是「serve 只监听 tailnet 口」这个独立问题）。
 
 # ===== 在 proxies 最前面插入 Tailscale 节点 =====
 +proxies:
