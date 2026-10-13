@@ -33,6 +33,15 @@ payload:
   - '+.icloud.com'
   - '+.icloud.com.cn'
   - '+.icloud-content.com'
+  # ── Apple Music / 静态资源直连 ──
+  # blobstore 走代理会被风控拒绝无法播放，必须直连
+  - '+.blobstore.apple.com'
+  # 静态资源与图片 CDN 直连加速
+  - '+.mzstatic.com'
+  # Apple Music 音频流 CDN（国内直连 CDN 速度极快，防误代理版权阻断）
+  - aod.itunes.apple.com
+  - audio-ssl.itunes.apple.com
+  - streamingaudio.itunes.apple.com
   - '+.longbridge.cn'
   - '+.lbctrl.com'
   - '+.elysiver.h-e.top'

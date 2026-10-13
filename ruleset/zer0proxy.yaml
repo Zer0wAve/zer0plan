@@ -1,6 +1,18 @@
 payload:
   - '+.tabbitbrowser.com'
-  - '+.podcasts.apple.com'
-  - '+.itunes.apple.com'
-  - '+.mzstatic.com'
   - '+.xiaohongshu.com'
+  # ── 境外 Podcast ──
+  - '+.podcasts.apple.com'
+  - itsliveradio.apple.com
+  # ── Apple TV+（含 F1 赛事直播 / 线性流 / 点播）──
+  - '+.tv.apple.com'
+  - linear.tv.apple.com
+  - uts-api.itunes.apple.com
+  - play-edge.itunes.apple.com
+  - hls.itunes.apple.com
+  - hls-amt.itunes.apple.com
+  - np-edge.itunes.apple.com
+  - tv.applemusic.com
+  # ── F1 官方服务（若通过 Apple TV 账号绑定 F1 TV 观看）──
+  - '+.formula1.com'
+  - '+.f1tv.formula1.com'
