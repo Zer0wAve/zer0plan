@@ -1,0 +1,14 @@
+# sparkle - Windows Sparkle (Mihomo) 桌面覆写
+# 在 SubStore 中作为额外覆写使用，给 mainline.min.js 生成的配置补充 Windows 桌面控制字段
+# 运行顺序：先跑主 override JS（mainline.min.js#process=true），再跑此 YAML
+# jsDelivr: https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/sparkle.yaml
+
+# ===== 基础运行模式 =====
+mode: rule
+log-level: info
+find-process-mode: strict
+
+# ===== DNS 策略 =====
+dns:
+  nameserver-policy:
+    '+.day.app': '223.5.5.5'
