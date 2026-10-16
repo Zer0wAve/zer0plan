@@ -1,380 +1,350 @@
 import {
-  CDN_URL,
-  SPEEDTEST_URL,
-  LOW_COST_NODE_MATCHER,
-  NODE_SUFFIX,
-  PROXY_GROUPS,
-  countriesMeta,
+    CDN_URL,
+    SPEEDTEST_URL,
+    LOW_COST_NODE_MATCHER,
+    NODE_SUFFIX,
+    PROXY_GROUPS,
+    countriesMeta,
 } from "./constants";
-import type {
-  BuildProxyGroupsInput,
-  GroupType,
-  ProxyGroup,
-  ProxyNode,
-} from "./types";
+import type { BuildProxyGroupsInput, GroupType, ProxyGroup, ProxyNode } from "./types";
 import { isNotNull } from "./utils";
 
 interface BuildGroupByTypeInput {
-  name: string;
-  icon: string;
-  groupType: GroupType;
-  nodeSource: Pick<
-    ProxyGroup,
-    "proxies" | "include-all" | "filter" | "exclude-filter"
-  >;
+    name: string;
+    icon: string;
+    groupType: GroupType;
+    nodeSource: Pick<ProxyGroup, "proxies" | "include-all" | "filter" | "exclude-filter">;
 }
 
 function buildGroupByType({
-  name,
-  icon,
-  groupType,
-  nodeSource,
+    name,
+    icon,
+    groupType,
+    nodeSource,
 }: BuildGroupByTypeInput): ProxyGroup {
-  switch (groupType) {
-    case 0:
-      return { name, icon, type: "select", ...nodeSource };
-    case 1:
-      return {
-        name,
-        icon,
-        type: "url-test",
-        url: SPEEDTEST_URL,
-        interval: 60,
-        tolerance: 20,
-        lazy: true,
-        ...nodeSource,
-      };
-    case 2:
-      return {
-        name,
-        icon,
-        type: "load-balance",
-        strategy: "sticky-sessions",
-        url: SPEEDTEST_URL,
-        interval: 60,
-        tolerance: 20,
-        lazy: true,
-        ...nodeSource,
-      };
-  }
+    switch (groupType) {
+        case 0:
+            return { name, icon, type: "select", ...nodeSource };
+        case 1:
+            return {
+                name,
+                icon,
+                type: "url-test",
+                url: SPEEDTEST_URL,
+                interval: 60,
+                tolerance: 20,
+                lazy: true,
+                ...nodeSource,
+            };
+        case 2:
+            return {
+                name,
+                icon,
+                type: "load-balance",
+                strategy: "sticky-sessions",
+                url: SPEEDTEST_URL,
+                interval: 60,
+                tolerance: 20,
+                lazy: true,
+                ...nodeSource,
+            };
+    }
 }
 
 export function buildProxyGroups({
-  regexFilter,
-  groupType,
-  countryNames,
-  countryNodes,
-  lowCostNodes,
-  bkupNodes,
-  nonLandingNodes,
-  landing,
-  landingNodes,
-  defaultProxies,
-  defaultProxiesDirect,
-  defaultSelector,
-  defaultFallback,
-  frontProxySelector,
-  telegramManual,
+    regexFilter,
+    groupType,
+    countryNames,
+    countryNodes,
+    lowCostNodes,
+    bkupNodes,
+    nonLandingNodes,
+    landing,
+    landingNodes,
+    defaultProxies,
+    defaultProxiesDirect,
+    defaultSelector,
+    defaultFallback,
+    frontProxySelector,
+    telegramManual,
 }: BuildProxyGroupsInput): ProxyGroup[] {
-  const hasTW = countryNames.includes("台湾");
-  const hasHK = countryNames.includes("香港");
-  const hasBkup = bkupNodes.length > 0;
+    const hasTW = countryNames.includes("台湾");
+    const hasHK = countryNames.includes("香港");
+    const hasBkup = bkupNodes.length > 0;
 
-  // 仅列入 OpenAI、Anthropic 与 Gemini API 当前均明确支持的保守地区。
-  // 故意排除香港、台湾、俄罗斯、低倍率和 DIRECT，避免 AI 服务触发地区限制或出口漂移。
-  const aiPreferredCountries = [
-    "美国",
-    "新加坡",
-    "日本",
-    "韩国",
-    "加拿大",
-    "英国",
-    "德国",
-    "法国",
-    "澳大利亚",
-  ];
-  const aiProxies = aiPreferredCountries
-    .filter((country) => countryNames.includes(country))
-    .map((country) => `${country}${NODE_SUFFIX}`);
+    // 仅列入 OpenAI、Anthropic 与 Gemini API 当前均明确支持的保守地区。
+    // 故意排除香港、台湾、俄罗斯、低倍率和 DIRECT，避免 AI 服务触发地区限制或出口漂移。
+    const aiPreferredCountries = [
+        "美国",
+        "新加坡",
+        "日本",
+        "韩国",
+        "加拿大",
+        "英国",
+        "德国",
+        "法国",
+        "澳大利亚",
+    ];
+    const aiProxies = aiPreferredCountries
+        .filter((country) => countryNames.includes(country))
+        .map((country) => `${country}${NODE_SUFFIX}`);
 
-  // Telegram 组 = fallback，成员是具体节点（按国家优先级展开），最后兜底 故障转移。
-  // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
-  // 永远卡在竞速选出的坏节点上（曾实测卡大半天，Telegram 消息发不出）。
-  // 具体节点命中→持续使用（不打断 MTProto 长连接）；全失效→经 故障转移(含 bkup) 逃生。
-  const telegramPreferredCountries = [
-    "香港",
-    "日本",
-    "台湾",
-    "美国",
-    "新加坡",
-  ];
+    // Telegram 组 = fallback，成员是具体节点（按国家优先级展开），最后兜底 故障转移。
+    // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
+    // 永远卡在竞速选出的坏节点上（曾实测卡大半天，Telegram 消息发不出）。
+    // 具体节点命中→持续使用（不打断 MTProto 长连接）；全失效→经 故障转移(含 bkup) 逃生。
+    const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
 
-  const isFlowerNode = (node: ProxyNode) => Boolean(node.name?.startsWith("花云-"));
-  const isExperimental = (node: ProxyNode) => Boolean(node.name?.includes("实验性"));
-  const isAdvanced = (node: ProxyNode) => Boolean(node.name?.includes("高级"));
+    const isFlowerNode = (node: ProxyNode) => Boolean(node.name?.startsWith("花云-"));
+    const isExperimental = (node: ProxyNode) => Boolean(node.name?.includes("实验性"));
+    const isAdvanced = (node: ProxyNode) => Boolean(node.name?.includes("高级"));
 
-  // 每个优先国家内的候选节点（实验性节点仅在手机手动模式下纳入）。
-  const telegramCandidatesByCountry = telegramPreferredCountries.map((country) =>
-    (countryNodes[country] || [])
-      .filter(
-        (node) =>
-          isFlowerNode(node) && (telegramManual || !isExperimental(node)),
-      )
-      .sort((a, b) => {
-        // 国家内优先级：实验性(低倍率) > 高级 > 标准
-        const rank = (node: ProxyNode) =>
-          isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
-        return rank(a) - rank(b);
-      }),
-  );
+    // 每个优先国家内的候选节点（实验性节点仅在手机手动模式下纳入）。
+    const telegramCandidatesByCountry = telegramPreferredCountries.map((country) =>
+        (countryNodes[country] || [])
+            .filter((node) => isFlowerNode(node) && (telegramManual || !isExperimental(node)))
+            .sort((a, b) => {
+                // 国家内优先级：实验性(低倍率) > 高级 > 标准
+                const rank = (node: ProxyNode) =>
+                    isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
+                return rank(a) - rank(b);
+            })
+    );
 
-  // Telegram 组是 fallback：只取第一个健康节点，且无法手动切换。
-  // 故低倍率(实验性)节点必须整体前置才真正生效，全不可用时自动回落到高级/标准。
-  // 注意：实验性节点每个国家各一个，若只做「国家内前置」，排在首个国家之后的低倍率
-  // 节点会被前面的付费节点挡住而永不启用 —— 因此把全部低倍率节点提到整体最前。
-  const telegramLowCostFirst = telegramCandidatesByCountry
-    .flatMap((nodes) => nodes.filter(isExperimental))
-    .map((node) => node.name)
-    .filter(isNotNull);
-  const telegramRegular = telegramCandidatesByCountry
-    .flatMap((nodes) => nodes.filter((node) => !isExperimental(node)))
-    .map((node) => node.name)
-    .filter(isNotNull);
+    // Telegram 组是 fallback：只取第一个健康节点，且无法手动切换。
+    // 故低倍率(实验性)节点必须整体前置才真正生效，全不可用时自动回落到高级/标准。
+    // 注意：实验性节点每个国家各一个，若只做「国家内前置」，排在首个国家之后的低倍率
+    // 节点会被前面的付费节点挡住而永不启用 —— 因此把全部低倍率节点提到整体最前。
+    const telegramLowCostFirst = telegramCandidatesByCountry
+        .flatMap((nodes) => nodes.filter(isExperimental))
+        .map((node) => node.name)
+        .filter(isNotNull);
+    const telegramRegular = telegramCandidatesByCountry
+        .flatMap((nodes) => nodes.filter((node) => !isExperimental(node)))
+        .map((node) => node.name)
+        .filter(isNotNull);
 
-  const telegramProxies = [
-    ...telegramLowCostFirst,
-    ...telegramRegular,
-    PROXY_GROUPS.FALLBACK,
-  ];
+    const telegramProxies = [...telegramLowCostFirst, ...telegramRegular, PROXY_GROUPS.FALLBACK];
 
-  const groups: Array<ProxyGroup | null> = [
-    // 1. 选择代理
-    {
-      name: PROXY_GROUPS.SELECT,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Proxy.png`,
-      type: "select",
-      proxies: defaultSelector,
-    },
-    // 2. 手动选择（排除bkup节点，加bkup组入口）
-    {
-      name: PROXY_GROUPS.MANUAL,
-      icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
-      type: "select",
-      proxies: [
-        ...nonLandingNodes
-          .filter((n) => n.name && !/bkup/i.test(n.name))
-          .map((n) => n.name!)
-          .filter(isNotNull),
-        ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
-      ],
-    },
-    // 3. 自动选择
-    {
-      name: PROXY_GROUPS.AUTO,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Auto.png`,
-      type: "url-test",
-      url: SPEEDTEST_URL,
-      proxies: defaultFallback,
-      interval: 60,
-      tolerance: 20,
-      lazy: true,
-    },
-    // 4. 故障转移（排除香港节点，HK易受GFW干扰不适合做fallback）
-    // 花云整体故障时应尽快切至 bkup：短间隔探测、单次失败即切换。
-    {
-      name: PROXY_GROUPS.FALLBACK,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
-      type: "fallback",
-      url: SPEEDTEST_URL,
-      proxies: [
-        ...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`),
-        ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
-      ],
-      interval: 15,
-      timeout: 2500,
-      "max-failed-times": 1,
-      tolerance: 20,
-      lazy: true,
-    },
-    // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
-    {
-      name: PROXY_GROUPS.AI_SERVICE,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
-      type: "select",
-      proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies],
-    },
-    // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
-    //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
-    {
-      name: PROXY_GROUPS.TELEGRAM,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
-      type: "fallback",
-      url: "https://api.telegram.org",
-      "expected-status": "404",
-      interval: 30,
-      timeout: 2500,
-      "max-failed-times": 1,
-      lazy: true,
-      proxies: telegramProxies,
-    },
-    // 7. 前置代理 (conditional)
-    landing
-      ? {
-          name: PROXY_GROUPS.FRONT_PROXY,
-          icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Area.png`,
-          type: "select",
-          proxies: frontProxySelector,
-        }
-      : null,
-    // 8. 落地节点 (conditional)
-    landing
-      ? {
-          name: PROXY_GROUPS.LANDING,
-          icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Airport.png`,
-          type: "select",
-          proxies: landingNodes.map((node) => node.name).filter(isNotNull),
-        }
-      : null,
-    // 9. 静态资源
-    {
-      name: PROXY_GROUPS.STATIC_RESOURCES,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 10. 谷歌服务
-    {
-      name: PROXY_GROUPS.GOOGLE,
-      icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 11. 微软服务
-    {
-      name: PROXY_GROUPS.MICROSOFT,
-      icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Microsoft_Copilot.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 12. 哔哩哔哩
-    {
-      name: PROXY_GROUPS.BILIBILI,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/bilibili.png`,
-      type: "select",
-      proxies:
-        hasTW && hasHK
-          ? ["DIRECT", `台湾节点`, `香港节点`]
-          : defaultProxiesDirect,
-    },
-    // 13. Xbox
-    {
-      name: PROXY_GROUPS.XBOX,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 14. Github
-    {
-      name: PROXY_GROUPS.GITHUB,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 15. Video
-    {
-      name: PROXY_GROUPS.VIDEO,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 地区节点 (dynamic, placed between Video and LOW_COST)
-    ...countryNames.map((country) => {
-      const meta = countriesMeta[country];
-      if (!meta) return null;
-      const nodeSource = regexFilter
-        ? {
-            "include-all": true as const,
-            filter: meta.pattern,
-            ...(meta.excludePattern
-              ? { "exclude-filter": meta.excludePattern }
-              : {}),
-          }
-        : {
-            proxies: countryNodes[country]
-              ?.map((n) => n.name)
-              .filter(isNotNull),
-          };
-      return buildGroupByType({
-        name: `${country}${NODE_SUFFIX}`,
-        icon: meta.icon,
-        groupType,
-        nodeSource,
-      });
-    }),
-    // 15. 低倍率节点 (conditional)
-    lowCostNodes.length > 0 || regexFilter
-      ? buildGroupByType({
-          name: PROXY_GROUPS.LOW_COST,
-          icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Lab.png`,
-          groupType,
-          nodeSource: !regexFilter
+    const groups: Array<ProxyGroup | null> = [
+        // 1. 选择代理
+        {
+            name: PROXY_GROUPS.SELECT,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Proxy.png`,
+            type: "select",
+            proxies: defaultSelector,
+        },
+        // 2. 手动选择（排除bkup节点，加bkup组入口）
+        {
+            name: PROXY_GROUPS.MANUAL,
+            icon: `${CDN_URL}/gh/shindgewongxj/WHATSINStash@master/icon/select.png`,
+            type: "select",
+            proxies: [
+                ...nonLandingNodes
+                    .filter((n) => n.name && !/bkup/i.test(n.name))
+                    .map((n) => n.name!)
+                    .filter(isNotNull),
+                ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
+            ],
+        },
+        // 3. 自动选择
+        {
+            name: PROXY_GROUPS.AUTO,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Auto.png`,
+            type: "url-test",
+            url: SPEEDTEST_URL,
+            proxies: defaultFallback,
+            interval: 60,
+            tolerance: 20,
+            lazy: true,
+        },
+        // 4. 故障转移（排除香港节点，HK易受GFW干扰不适合做fallback）
+        // 花云整体故障时应尽快切至 bkup：短间隔探测、单次失败即切换。
+        {
+            name: PROXY_GROUPS.FALLBACK,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
+            type: "fallback",
+            url: SPEEDTEST_URL,
+            proxies: [
+                ...defaultFallback.filter((p) => p !== `香港${NODE_SUFFIX}`),
+                ...(hasBkup ? [PROXY_GROUPS.BKUP] : []),
+            ],
+            interval: 15,
+            timeout: 2500,
+            "max-failed-times": 1,
+            tolerance: 20,
+            lazy: true,
+        },
+        // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
+        {
+            name: PROXY_GROUPS.AI_SERVICE,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
+            type: "select",
+            proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies],
+        },
+        // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
+        //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
+        {
+            name: PROXY_GROUPS.TELEGRAM,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
+            type: "fallback",
+            url: "https://api.telegram.org",
+            "expected-status": "404",
+            interval: 30,
+            timeout: 2500,
+            "max-failed-times": 1,
+            lazy: true,
+            proxies: telegramProxies,
+        },
+        // 7. 前置代理 (conditional)
+        landing
             ? {
-                proxies: lowCostNodes
-                  .map((node) => node.name)
-                  .filter(isNotNull),
+                  name: PROXY_GROUPS.FRONT_PROXY,
+                  icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Area.png`,
+                  type: "select",
+                  proxies: frontProxySelector,
               }
-            : {
-                "include-all": true as const,
-                filter: LOW_COST_NODE_MATCHER.pattern,
-              },
-        })
-      : null,
-    // 15b. 备用节点 (conditional, url-test). 预热 bkup，避免外层故障转移进入时才开始测速。
-    bkupNodes.length > 0
-      ? {
-          name: PROXY_GROUPS.BKUP,
-          icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
-          type: "url-test",
-          url: SPEEDTEST_URL,
-          interval: 15,
-          tolerance: 20,
-          lazy: false,
-          proxies: bkupNodes.map((node) => node.name).filter(isNotNull),
-        }
-      : null,
-    // 16. E-Hentai
-    {
-      name: PROXY_GROUPS.EHENTAI,
-      icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Ehentai.png`,
-      type: "select",
-      proxies: defaultProxies,
-    },
-    // 17. 广告拦截
-    {
-      name: PROXY_GROUPS.AD_BLOCK,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/AdBlack.png`,
-      type: "select",
-      proxies: ["REJECT", "REJECT-DROP", "DIRECT"],
-    },
-    // 18. Final
-    {
-      name: PROXY_GROUPS.FINAL,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,
-      type: "select",
-      proxies: [PROXY_GROUPS.SELECT, "DIRECT"],
-    },
-    // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
-    {
-      name: PROXY_GROUPS.AI_FALLBACK,
-      icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
-      type: "fallback",
-      url: SPEEDTEST_URL,
-      proxies: [...aiProxies, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
-      interval: 60,
-      tolerance: 20,
-      lazy: true,
-    },
-  ];
+            : null,
+        // 8. 落地节点 (conditional)
+        landing
+            ? {
+                  name: PROXY_GROUPS.LANDING,
+                  icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Airport.png`,
+                  type: "select",
+                  proxies: landingNodes.map((node) => node.name).filter(isNotNull),
+              }
+            : null,
+        // 9. 静态资源
+        {
+            name: PROXY_GROUPS.STATIC_RESOURCES,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Cloudflare.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 10. 谷歌服务
+        {
+            name: PROXY_GROUPS.GOOGLE,
+            icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 11. 微软服务
+        {
+            name: PROXY_GROUPS.MICROSOFT,
+            icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Microsoft_Copilot.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 12. 哔哩哔哩
+        {
+            name: PROXY_GROUPS.BILIBILI,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/bilibili.png`,
+            type: "select",
+            proxies: hasTW && hasHK ? ["DIRECT", `台湾节点`, `香港节点`] : defaultProxiesDirect,
+        },
+        // 13. Xbox
+        {
+            name: PROXY_GROUPS.XBOX,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Xbox.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 14. Github
+        {
+            name: PROXY_GROUPS.GITHUB,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/GitHub.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 15. Video
+        {
+            name: PROXY_GROUPS.VIDEO,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/YouTube.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 地区节点 (dynamic, placed between Video and LOW_COST)
+        ...countryNames.map((country) => {
+            const meta = countriesMeta[country];
+            if (!meta) return null;
+            const nodeSource = regexFilter
+                ? {
+                      "include-all": true as const,
+                      filter: meta.pattern,
+                      ...(meta.excludePattern ? { "exclude-filter": meta.excludePattern } : {}),
+                  }
+                : {
+                      proxies: countryNodes[country]?.map((n) => n.name).filter(isNotNull),
+                  };
+            return buildGroupByType({
+                name: `${country}${NODE_SUFFIX}`,
+                icon: meta.icon,
+                groupType,
+                nodeSource,
+            });
+        }),
+        // 15. 低倍率节点 (conditional)
+        lowCostNodes.length > 0 || regexFilter
+            ? buildGroupByType({
+                  name: PROXY_GROUPS.LOW_COST,
+                  icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Lab.png`,
+                  groupType,
+                  nodeSource: !regexFilter
+                      ? {
+                            proxies: lowCostNodes.map((node) => node.name).filter(isNotNull),
+                        }
+                      : {
+                            "include-all": true as const,
+                            filter: LOW_COST_NODE_MATCHER.pattern,
+                        },
+              })
+            : null,
+        // 15b. 备用节点 (conditional, url-test). 预热 bkup，避免外层故障转移进入时才开始测速。
+        bkupNodes.length > 0
+            ? {
+                  name: PROXY_GROUPS.BKUP,
+                  icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Available_1.png`,
+                  type: "url-test",
+                  url: SPEEDTEST_URL,
+                  interval: 15,
+                  tolerance: 20,
+                  lazy: false,
+                  proxies: bkupNodes.map((node) => node.name).filter(isNotNull),
+              }
+            : null,
+        // 16. E-Hentai
+        {
+            name: PROXY_GROUPS.EHENTAI,
+            icon: `${CDN_URL}/gh/powerfullz/override-rules@master/icons/Ehentai.png`,
+            type: "select",
+            proxies: defaultProxies,
+        },
+        // 17. 广告拦截
+        {
+            name: PROXY_GROUPS.AD_BLOCK,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/AdBlack.png`,
+            type: "select",
+            proxies: ["REJECT", "REJECT-DROP", "DIRECT"],
+        },
+        // 18. Final
+        {
+            name: PROXY_GROUPS.FINAL,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Final.png`,
+            type: "select",
+            proxies: [PROXY_GROUPS.SELECT, "DIRECT"],
+        },
+        // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
+        {
+            name: PROXY_GROUPS.AI_FALLBACK,
+            icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
+            type: "fallback",
+            url: SPEEDTEST_URL,
+            proxies: [...aiProxies, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
+            interval: 60,
+            tolerance: 20,
+            lazy: true,
+        },
+    ];
 
-  return groups.filter(isNotNull);
+    return groups.filter(isNotNull);
 }
