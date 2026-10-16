@@ -314,31 +314,19 @@ https://github.com/powerfullz/override-rules
       "澳大利亚"
     ];
     const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
-    const telegramPreferredCountries = [
-      "香港",
-      "日本",
-      "台湾",
-      "美国",
-      "新加坡"
-    ];
+    const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
     const isFlowerNode = (node) => Boolean(node.name?.startsWith("花云-"));
     const isExperimental = (node) => Boolean(node.name?.includes("实验性"));
     const isAdvanced = (node) => Boolean(node.name?.includes("高级"));
     const telegramCandidatesByCountry = telegramPreferredCountries.map(
-      (country) => (countryNodes[country] || []).filter(
-        (node) => isFlowerNode(node) && (telegramManual || !isExperimental(node))
-      ).sort((a, b) => {
+      (country) => (countryNodes[country] || []).filter((node) => isFlowerNode(node) && (telegramManual || !isExperimental(node))).sort((a, b) => {
         const rank = (node) => isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
         return rank(a) - rank(b);
       })
     );
     const telegramLowCostFirst = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter(isExperimental)).map((node) => node.name).filter(isNotNull);
     const telegramRegular = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter((node) => !isExperimental(node))).map((node) => node.name).filter(isNotNull);
-    const telegramProxies = [
-      ...telegramLowCostFirst,
-      ...telegramRegular,
-      PROXY_GROUPS.FALLBACK
-    ];
+    const telegramProxies = [...telegramLowCostFirst, ...telegramRegular, PROXY_GROUPS.FALLBACK];
     const groups = [
       // 1. 选择代理
       {
@@ -836,11 +824,7 @@ https://github.com/powerfullz/override-rules
   });
 
   // src/dns.ts
-  function buildDnsConfig({
-    mode,
-    ipv6Enabled,
-    fakeIpFilter
-  }) {
+  function buildDnsConfig({ mode, ipv6Enabled, fakeIpFilter }) {
     const config = {
       enable: true,
       ipv6: ipv6Enabled,
@@ -858,10 +842,7 @@ https://github.com/powerfullz/override-rules
     }
     return config;
   }
-  function buildDns({
-    fakeIPEnabled,
-    ipv6Enabled
-  }) {
+  function buildDns({ fakeIPEnabled, ipv6Enabled }) {
     if (fakeIPEnabled) {
       return buildDnsConfig({
         mode: "fake-ip",
@@ -936,14 +917,12 @@ https://github.com/powerfullz/override-rules
   function buildBaseLists({
     landing,
     lowCostNodes,
-    bkupNodes,
     countryNames,
     nonLandingNodes,
     regexFilter
   }) {
     const suffixedCountryNames = countryNames.map((c) => c + NODE_SUFFIX);
     const lowCost = lowCostNodes.length > 0 || regexFilter;
-    const bkup = bkupNodes.length > 0;
     const defaultSelector = buildList(
       PROXY_GROUPS.FALLBACK,
       PROXY_GROUPS.AUTO,
@@ -969,10 +948,7 @@ https://github.com/powerfullz/override-rules
       PROXY_GROUPS.SELECT,
       PROXY_GROUPS.MANUAL
     );
-    const defaultFallback = buildList(
-      landing && PROXY_GROUPS.LANDING,
-      suffixedCountryNames
-    );
+    const defaultFallback = buildList(landing && PROXY_GROUPS.LANDING, suffixedCountryNames);
     const frontProxySelector = buildList(
       suffixedCountryNames,
       "DIRECT",
@@ -1053,7 +1029,6 @@ https://github.com/powerfullz/override-rules
         } = buildBaseLists({
           landing,
           lowCostNodes,
-          bkupNodes,
           countryNames,
           nonLandingNodes,
           regexFilter
