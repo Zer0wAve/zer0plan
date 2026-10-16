@@ -1,0 +1,19 @@
+# 自动生成的文件
+yamls/
+convert.js
+convert.min.js
+
+# npm run build 的产物（被 git 跟踪，但检查/格式化它们无意义）
+mainline.js
+mainline.min.js
+
+# 依赖
+node_modules/
+
+# 其他
+*.yaml
+*.yml
+*.list
+*.json
+*.md
+*.sh
