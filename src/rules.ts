@@ -1,6 +1,16 @@
-import { PROXY_GROUPS } from "./constants";
+import { NODE_SUFFIX, PROXY_GROUPS } from "./constants";
 
-const baseRules = [
+/** acgrip 按出口地区拦截：日本/英国/德国出口整站 403，港/台/新/美实测均 200。
+ *  这里按优先级挑一个「地区组已生成」的国家，避免引用不存在的组导致配置致命错误。
+ *  注意 countryNames 是裸国家名（如「香港」），组名要自己补 NODE_SUFFIX。 */
+const ACGRIP_COUNTRIES = ["香港", "台湾", "新加坡", "美国"];
+
+const baseRules = (acgripGroup: string | undefined): string[] => [
+  // acgrip 直连 5–35s 常超时，必须走代理；但它不能共用 zer0proxy 的目标组：
+  // 那是 选择代理，Windows 上前者默认指向 低倍率节点（url-test，含日本实验性节点），
+  // 竞速到日本出口就整站 403（实测日本节点根域/forum.php/帖子页全 403，
+  // 而同节点访问 example.com/cloudflare.com/discord.com 均 200）。
+  ...(acgripGroup ? [`DOMAIN-SUFFIX,acgrip.com,${acgripGroup}`] : []),
   // Explicit proxy exceptions take precedence over broad direct domains.
   `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
   `RULE-SET,zer0direct,DIRECT`,
@@ -70,14 +80,19 @@ const processDirectRules = [
  *
  * @param {Object} params - 构建参数
  * @param {boolean} params.processRulesEnabled - 是否加入桌面端进程直连规则
+ * @param {string[]} params.countryNames - 实际生成的地区节点组（用于判断 acgrip 该钉哪个组）
  * @returns {string[]} 规则字符串数组
  */
 export function buildRules({
   processRulesEnabled,
+  countryNames,
 }: {
   processRulesEnabled: boolean;
+  countryNames: string[];
 }): string[] {
-  return processRulesEnabled
-    ? [...processDirectRules, ...baseRules]
-    : [...baseRules];
+  const acgripCountry = ACGRIP_COUNTRIES.find((c) => countryNames.includes(c));
+  // 没有任何可用的港/台/新/美地区组时，不生成 acgrip 规则（宁可走 zer0proxy 的口子，
+  // 也不要引用一个不存在的组把整份配置打成致命错误）。
+  const rules = baseRules(acgripCountry ? `${acgripCountry}${NODE_SUFFIX}` : undefined);
+  return processRulesEnabled ? [...processDirectRules, ...rules] : rules;
 }

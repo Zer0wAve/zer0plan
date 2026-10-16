@@ -124,7 +124,7 @@ function main(config: ClashConfig): ClashConfig {
         proxies: globalProxies,
     });
 
-    const finalRules = buildRules({ processRulesEnabled });
+    const finalRules = buildRules({ processRulesEnabled, countryNames });
 
     return {
         ...(fullConfig && {

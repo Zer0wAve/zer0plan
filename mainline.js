@@ -628,16 +628,25 @@ https://github.com/powerfullz/override-rules
 
   // src/rules.ts
   function buildRules({
-    processRulesEnabled
+    processRulesEnabled,
+    countryNames
   }) {
-    return processRulesEnabled ? [...processDirectRules, ...baseRules] : [...baseRules];
+    const acgripCountry = ACGRIP_COUNTRIES.find((c) => countryNames.includes(c));
+    const rules = baseRules(acgripCountry ? `${acgripCountry}${NODE_SUFFIX}` : void 0);
+    return processRulesEnabled ? [...processDirectRules, ...rules] : rules;
   }
-  var baseRules, processDirectRules;
+  var ACGRIP_COUNTRIES, baseRules, processDirectRules;
   var init_rules = __esm({
     "src/rules.ts"() {
       "use strict";
       init_constants();
-      baseRules = [
+      ACGRIP_COUNTRIES = ["香港", "台湾", "新加坡", "美国"];
+      baseRules = (acgripGroup) => [
+        // acgrip 直连 5–35s 常超时，必须走代理；但它不能共用 zer0proxy 的目标组：
+        // 那是 选择代理，Windows 上前者默认指向 低倍率节点（url-test，含日本实验性节点），
+        // 竞速到日本出口就整站 403（实测日本节点根域/forum.php/帖子页全 403，
+        // 而同节点访问 example.com/cloudflare.com/discord.com 均 200）。
+        ...acgripGroup ? [`DOMAIN-SUFFIX,acgrip.com,${acgripGroup}`] : [],
         // Explicit proxy exceptions take precedence over broad direct domains.
         `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
         `RULE-SET,zer0direct,DIRECT`,
@@ -1074,7 +1083,7 @@ https://github.com/powerfullz/override-rules
           type: "select",
           proxies: globalProxies
         });
-        const finalRules = buildRules({ processRulesEnabled });
+        const finalRules = buildRules({ processRulesEnabled, countryNames });
         return {
           ...fullConfig && {
             "mixed-port": 7890,
