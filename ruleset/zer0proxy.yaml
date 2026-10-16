@@ -1,4 +1,7 @@
 payload:
+  # acgrip 是 Cloudflare 前置的论坛，国内直连实测 5–35s（常超时），
+  # 走港/新/台/美出口约 1.0s；显式走代理，别靠尾部 IP 规则兜底。
+  - '+.acgrip.com'
   - '+.tabbitbrowser.com'
   - '+.xiaohongshu.com'
   # ── 境外 Podcast ──
