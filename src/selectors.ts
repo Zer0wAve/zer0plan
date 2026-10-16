@@ -15,14 +15,12 @@ import type { BaseLists, BuildBaseListsInput } from "./types";
 export function buildBaseLists({
     landing,
     lowCostNodes,
-    bkupNodes,
     countryNames,
     nonLandingNodes,
     regexFilter,
 }: BuildBaseListsInput): BaseLists {
     const suffixedCountryNames = countryNames.map((c) => c + NODE_SUFFIX);
     const lowCost = lowCostNodes.length > 0 || regexFilter;
-    const bkup = bkupNodes.length > 0;
 
     const defaultSelector = buildList(
         PROXY_GROUPS.FALLBACK,
@@ -52,10 +50,7 @@ export function buildBaseLists({
         PROXY_GROUPS.MANUAL
     );
 
-    const defaultFallback = buildList(
-        landing && PROXY_GROUPS.LANDING,
-        suffixedCountryNames
-    );
+    const defaultFallback = buildList(landing && PROXY_GROUPS.LANDING, suffixedCountryNames);
 
     const frontProxySelector = buildList(
         suffixedCountryNames,

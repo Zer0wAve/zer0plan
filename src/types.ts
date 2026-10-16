@@ -81,10 +81,7 @@ export interface FallbackProxyGroup extends BaseProxyGroup {
 }
 
 export type ProxyGroup =
-    | SelectProxyGroup
-    | UrlTestProxyGroup
-    | LoadBalanceProxyGroup
-    | FallbackProxyGroup;
+    SelectProxyGroup | UrlTestProxyGroup | LoadBalanceProxyGroup | FallbackProxyGroup;
 
 export interface SnifferProtocolConfig {
     ports: number[];
@@ -200,7 +197,6 @@ export interface BaseLists {
 export interface BuildBaseListsInput {
     landing: boolean;
     lowCostNodes: ProxyNode[];
-    bkupNodes: ProxyNode[];
     countryNames: string[];
     nonLandingNodes: ProxyNode[];
     regexFilter: boolean;

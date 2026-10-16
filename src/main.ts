@@ -91,7 +91,6 @@ function main(config: ClashConfig): ClashConfig {
     } = buildBaseLists({
         landing,
         lowCostNodes,
-        bkupNodes,
         countryNames,
         nonLandingNodes,
         regexFilter,
