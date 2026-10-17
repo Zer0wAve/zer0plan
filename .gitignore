@@ -1,3 +1,10 @@
 node_modules/
 dist/
 *.log
+
+# TLS 私钥/证书（tailscale serve 用，绝不能入库）—— 与 workspace/octopus 同口径。
+# 本仓有 GitHub remote，这两个文件一直处于「未跟踪但未被忽略」状态：任何人一次
+# `git add -A` 就会把私钥推上 GitHub。2026-10-17 补忽略（文件本机保留不动）。
+*.key
+*.crt
+*.pem
