@@ -617,11 +617,14 @@ https://github.com/powerfullz/override-rules
   // src/rules.ts
   function buildRules({
     processRulesEnabled,
+    quicEnabled,
     countryNames
   }) {
     const acgripCountry = ACGRIP_COUNTRIES.find((c) => countryNames.includes(c));
     const rules = baseRules(acgripCountry ? `${acgripCountry}${NODE_SUFFIX}` : void 0);
-    return processRulesEnabled ? [...processDirectRules, ...rules] : rules;
+    const quicRejectRule = quicEnabled ? [] : ["AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"];
+    const merged = [...quicRejectRule, ...rules];
+    return processRulesEnabled ? [...processDirectRules, ...merged] : merged;
   }
   var ACGRIP_COUNTRIES, baseRules, processDirectRules;
   var init_rules = __esm({
@@ -1058,7 +1061,7 @@ https://github.com/powerfullz/override-rules
           type: "select",
           proxies: globalProxies
         });
-        const finalRules = buildRules({ processRulesEnabled, countryNames });
+        const finalRules = buildRules({ processRulesEnabled, quicEnabled, countryNames });
         return {
           ...fullConfig && {
             "mixed-port": 7890,

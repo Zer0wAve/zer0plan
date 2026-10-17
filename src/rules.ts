@@ -80,19 +80,32 @@ const processDirectRules = [
  *
  * @param {Object} params - 构建参数
  * @param {boolean} params.processRulesEnabled - 是否加入桌面端进程直连规则
+ * @param {boolean} params.quicEnabled - 是否允许 QUIC；false（默认）时在规则最前面插入 UDP/443 拦截
  * @param {string[]} params.countryNames - 实际生成的地区节点组（用于判断 acgrip 该钉哪个组）
  * @returns {string[]} 规则字符串数组
  */
 export function buildRules({
     processRulesEnabled,
+    quicEnabled,
     countryNames,
 }: {
     processRulesEnabled: boolean;
+    quicEnabled: boolean;
     countryNames: string[];
 }): string[] {
     const acgripCountry = ACGRIP_COUNTRIES.find((c) => countryNames.includes(c));
     // 没有任何可用的港/台/新/美地区组时，不生成 acgrip 规则（宁可走 zer0proxy 的口子，
     // 也不要引用一个不存在的组把整份配置打成致命错误）。
     const rules = baseRules(acgripCountry ? `${acgripCountry}${NODE_SUFFIX}` : undefined);
-    return processRulesEnabled ? [...processDirectRules, ...rules] : rules;
+
+    // QUIC 拦截：`AND,((DST-PORT,443),(NETWORK,UDP)),REJECT` 是 mihomo 与 Stash 通用的标准写法
+    // （两者都支持 AND 组合 + NETWORK/DST-PORT，且都要求该规则位于 rules 最前面才拦得全）。
+    // 必须放最前：UDP/443 要先于所有域名规则被裁决，否则已命中域名的 QUIC 会漏过去。
+    // 注意 mihomo 的 REJECT 对 UDP 是**静默丢包**（不发 ICMP，见 mihomo#3211），
+    // 客户端要等自己的 QUIC 超时再回落 TCP —— 拦截换来的是「行为确定」，
+    // 而不是「瞬间回落」。不拦时走到不支持 UDP 的节点同样要等超时，且更不可控。
+    const quicRejectRule = quicEnabled ? [] : ["AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"];
+    const merged = [...quicRejectRule, ...rules];
+
+    return processRulesEnabled ? [...processDirectRules, ...merged] : merged;
 }

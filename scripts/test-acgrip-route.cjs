@@ -61,6 +61,13 @@ for (const out of [jpOnly, tw, build([...mk("香港", 2), ...mk("日本", 2)])])
         }
     }
     assert.ok(!out.rules.some((r) => r.includes("undefined")), "no stringified-undefined rule");
+    // QUIC 拦截必须存在且位于最前（process 规则之后的第一条）。
+    const firstNonProcess = out.rules.find((r) => !r.startsWith("PROCESS-NAME,"));
+    assert.equal(
+        firstNonProcess,
+        "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT",
+        "QUIC reject must be the first non-process rule"
+    );
 }
 
 console.log(
