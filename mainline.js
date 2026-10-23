@@ -382,16 +382,19 @@ https://github.com/powerfullz/override-rules
       },
       // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
       //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
+      //    2026-10-23 用户要求关掉 lazy 做预热：闲置后第一条连接不再撞死节点干等 2.5s。
+      //    代价是组内 51 个节点会被定期探测，故 interval 从 30s 放宽到 300s
+      //    （30s × 51 节点 ≈ 每分钟 100 次探测，太浪费；300s 约每分钟 10 次）。
       {
         name: PROXY_GROUPS.TELEGRAM,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
         type: "fallback",
         url: "https://api.telegram.org",
         "expected-status": "404",
-        interval: 30,
+        interval: 300,
         timeout: 2500,
         "max-failed-times": 1,
-        lazy: true,
+        lazy: false,
         proxies: telegramProxies
       },
       // 7. 前置代理 (conditional)

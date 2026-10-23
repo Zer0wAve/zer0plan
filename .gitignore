@@ -8,3 +8,7 @@ dist/
 *.key
 *.crt
 *.pem
+
+# Sub-Store 配置导出备份：内含订阅凭据，绝不能入库（2026-10-23 移到
+# ~/.hermes/archive/substore-override-20260927/ 并在此忽略，防止 git add -A 带走）
+backup/subs_*.json

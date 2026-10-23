@@ -1,0 +1,42 @@
+services:
+  sub-store:
+    image: xream/sub-store:latest
+    container_name: sub-store
+    restart: unless-stopped
+    ports:
+      - 192.168.0.224:8031:8031
+      - 192.168.0.224:8030:8030
+      # 关键：NAS 的 tailscaled 跑在 --tun=userspace-networking 模式，没有
+      # tailscale0 接口。netstack 会把发往该节点 tailnet IP（100.100.99.224 /
+      # ds224.hen-avior.ts.net）的入站连接，转发到宿主 127.0.0.1 的【同端口】。
+      # 只绑 LAN IP 时，tailnet 访问会 502 Bad Gateway。
+      # 因此必须同时监听 loopback，Tailscale 侧才能进得来（无需 tailscale serve，
+      # 也无需证书——NAS 连不上 Let's Encrypt，签不出 .ts.net 证书）。
+      - 127.0.0.1:8031:8031
+      - 127.0.0.1:8030:8030
+    volumes:
+      - ./sub-store-data:/opt/app/data
+    environment:
+      - TZ=Asia/Shanghai
+      - SUB_STORE_FRONTEND_PORT=8031
+      - SUB_STORE_FRONTEND_HOST=0.0.0.0
+      - SUB_STORE_BACKEND_API_PORT=8030
+      - SUB_STORE_BACKEND_API_HOST=0.0.0.0
+      - SUB_STORE_BACKEND_SYNC_CRON=55 23 * * *
+      # 2.41.0 起脚本操作/脚本过滤/改响应必须设置此项，否则报
+      # "Node.js 环境下，脚本操作... 必须设置 SUB_STORE_FRONTEND_BACKEND_PATH"
+      - SUB_STORE_FRONTEND_BACKEND_PATH=/
+      # 2.38.0 起 Node 版新增 CORS 来源白名单。不设此项时默认只放行
+      # https://sub-store.vercel.app,http://substore.stash,https://substore.stash
+      # 外加任意端口的 localhost/127.0.0.1；用其它地址（如局域网 IP）访问时，
+      # 带 Origin 头的请求（含同源 POST/PUT 与预检 OPTIONS）会被 403
+      # "CORS origin not allowed" 拒绝且不返回 Access-Control-Allow-Origin，
+      # 前端 axios 只能报 code:0 / Network Error，表现为「无法连接后端服务」。
+      #
+      # 注意：设置本变量是【整体替换】而非追加，所以必须把上游默认值一并抄上，
+      # 否则手机端 Stash 内的 SubStore（substore.stash）与 localhost 访问会被打破。
+      # 新增访问地址（IP/主机名/端口）时同步追加；为固定端口的精确 origin 匹配。
+      # Tailscale 访问不带 TLS（NAS 签不出证书），走 http://<tailnet 地址>:8031，
+      # 故按 host:port 形式列出，例如 100.100.99.224:8031 与 ds224.hen-avior.ts.net:8031。
+      - >-
+        SUB_STORE_CORS_ALLOWED_ORIGINS=https://sub-store.vercel.app,http://substore.stash,https://substore.stash,http://192.168.0.224:8031,http://192.168.0.224:8030,http://100.100.99.224:8031,http://100.100.99.224:8030,http://ds224:8031,http://ds224:8030,http://ds224.hen-avior.ts.net:8031,http://ds224.hen-avior.ts.net:8030,http://localhost:8031,http://localhost:8030,http://127.0.0.1:8031,http://127.0.0.1:8030
