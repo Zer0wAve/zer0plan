@@ -331,7 +331,9 @@ https://github.com/powerfullz/override-rules
       0,
       TELEGRAM_MAX_CONCRETE_MEMBERS
     );
-    const telegramProxies = [...telegramConcrete, PROXY_GROUPS.FALLBACK];
+    const TELEGRAM_BKUP_DIRECT_MEMBERS = 3;
+    const telegramBkupConcrete = bkupNodes.map((node) => node.name).filter(isNotNull).filter((name) => !telegramConcrete.includes(name)).slice(0, TELEGRAM_BKUP_DIRECT_MEMBERS);
+    const telegramProxies = telegramBkupConcrete.length ? [...telegramConcrete, ...telegramBkupConcrete] : [...telegramConcrete, PROXY_GROUPS.FALLBACK];
     const groups = [
       // 1. 选择代理
       {

@@ -133,7 +133,23 @@ export function buildProxyGroups({
         TELEGRAM_MAX_CONCRETE_MEMBERS
     );
 
-    const telegramProxies = [...telegramConcrete, PROXY_GROUPS.FALLBACK];
+    // 2026-10-30 用户实测反馈：末尾那个「故障转移」组**从来没真正兜过底**。
+    // fallback 里嵌 fallback/url-test 不会降级逃生——子组只剩死节点时父组仍把
+    // Chain.now 停在子组上（实测停在 Child 不落到下一个成员）。要真兜底，成员必须是
+    // **具体节点**。所以这里把 bkup（LXY，与花云是两家不同线路）的节点直接排进来：
+    // 花云全挂时才轮到它们，但那时是真的换了一条线。
+    // 只取前几个，探测预算仍是成员数 × interval，13 × 60s ≈ 13 次/分钟可接受。
+    const TELEGRAM_BKUP_DIRECT_MEMBERS = 3;
+    const telegramBkupConcrete = bkupNodes
+        .map((node) => node.name)
+        .filter(isNotNull)
+        .filter((name) => !telegramConcrete.includes(name))
+        .slice(0, TELEGRAM_BKUP_DIRECT_MEMBERS);
+
+    // 没有 bkup 节点时退回原结构（此时也没有别的线路可用）
+    const telegramProxies = telegramBkupConcrete.length
+        ? [...telegramConcrete, ...telegramBkupConcrete]
+        : [...telegramConcrete, PROXY_GROUPS.FALLBACK];
 
     const groups: Array<ProxyGroup | null> = [
         // 1. 选择代理
