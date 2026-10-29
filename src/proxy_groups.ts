@@ -124,7 +124,14 @@ export function buildProxyGroups({
         .map((node) => node.name)
         .filter(isNotNull);
 
-    const telegramProxies = [...telegramLowCostFirst, ...telegramRegular, PROXY_GROUPS.FALLBACK];
+    // 成员上限 10：组参数 interval 缩到 60s 后，成员数直接决定探测频率。
+    // 原来 51 个 × 300s ≈ 10 次/分钟；10 个 × 60s 保持同样开销，但退化只要 1 分钟就能换人。
+    // 取「低倍率优先 + 国家优先级」的前 10 个，剩下靠末尾 故障转移 兜底。
+    const TELEGRAM_MAX_CONCRETE_MEMBERS = 10;
+    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular]
+        .slice(0, TELEGRAM_MAX_CONCRETE_MEMBERS);
+
+    const telegramProxies = [...telegramConcrete, PROXY_GROUPS.FALLBACK];
 
     const groups: Array<ProxyGroup | null> = [
         // 1. 选择代理
@@ -185,16 +192,20 @@ export function buildProxyGroups({
         // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
         //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
         //    2026-10-23 用户要求关掉 lazy 做预热：闲置后第一条连接不再撞死节点干等 2.5s。
-        //    代价是组内 51 个节点会被定期探测，故 interval 从 30s 放宽到 300s
-        //    （30s × 51 节点 ≈ 每分钟 100 次探测，太浪费；300s 约每分钟 10 次）。
+        //
+        //    2026-10-29 晚高峰事故：interval 300s 意味着节点在 Telegram 这条路上变差后，
+        //    要等最多 5 分钟才复检换人，期间网关约四成请求报 Timed out/ConnectError
+        //    （同节点访问 google/github 仍 0.16–0.7s —— 是到 Telegram DC 的路径差，不是代理坏了）。
+        //    改法：成员砍到 10 个 + interval 60s。探测预算 = 10/60s ≈ 10 次/分钟，
+        //    与原来 51/300s 基本相同，但发现退化从 ≤300s 缩到 ≤60s。
         {
             name: PROXY_GROUPS.TELEGRAM,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/Telegram.png`,
             type: "fallback",
             url: "https://api.telegram.org",
             "expected-status": "404",
-            interval: 300,
-            timeout: 2500,
+            interval: 60,
+            timeout: 3000,
             "max-failed-times": 1,
             lazy: false,
             proxies: telegramProxies,
