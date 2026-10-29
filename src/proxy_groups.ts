@@ -138,8 +138,14 @@ export function buildProxyGroups({
     // Chain.now 停在子组上（实测停在 Child 不落到下一个成员）。要真兜底，成员必须是
     // **具体节点**。所以这里把 bkup（LXY，与花云是两家不同线路）的节点直接排进来：
     // 花云全挂时才轮到它们，但那时是真的换了一条线。
-    // 只取前几个，探测预算仍是成员数 × interval，13 × 60s ≈ 13 次/分钟可接受。
-    const TELEGRAM_BKUP_DIRECT_MEMBERS = 3;
+    // 只取前几个，探测预算仍是成员数 × interval，18 × 60s ≈ 18 次/分钟可接受。
+    // 2026-10-30 实测：LXY 里日本 CTCU 0.5x 那批全是死点，**只有活着的节点才有兜底价值**，
+    // 死节点放进 fallback 等于白占坑。所以这里按「最近实测延迟」只挑活的：
+    //   新加坡专线/英国流媒体/美国流媒体 都是活且低延迟（452–876ms）；
+    //   日本 CTCU 0.5x、美国 CTCU 0.1x、台湾流媒体 全死，不选。
+    // 每周六 01:30 的 bkup 筛查 cron 会把连续两次死的节点从运行配置里剔除（见
+    // ~/.hermes/scripts/bkup_prune.sh），下次订阅刷新自动恢复——死点会被持续摘除。
+    const TELEGRAM_BKUP_DIRECT_MEMBERS = 8;
     const telegramBkupConcrete = bkupNodes
         .map((node) => node.name)
         .filter(isNotNull)
