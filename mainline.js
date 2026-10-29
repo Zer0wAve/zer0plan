@@ -327,7 +327,10 @@ https://github.com/powerfullz/override-rules
     const telegramLowCostFirst = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter(isExperimental)).map((node) => node.name).filter(isNotNull);
     const telegramRegular = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter((node) => !isExperimental(node))).map((node) => node.name).filter(isNotNull);
     const TELEGRAM_MAX_CONCRETE_MEMBERS = 10;
-    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular].slice(0, TELEGRAM_MAX_CONCRETE_MEMBERS);
+    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular].slice(
+      0,
+      TELEGRAM_MAX_CONCRETE_MEMBERS
+    );
     const telegramProxies = [...telegramConcrete, PROXY_GROUPS.FALLBACK];
     const groups = [
       // 1. 选择代理

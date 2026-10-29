@@ -128,8 +128,10 @@ export function buildProxyGroups({
     // 原来 51 个 × 300s ≈ 10 次/分钟；10 个 × 60s 保持同样开销，但退化只要 1 分钟就能换人。
     // 取「低倍率优先 + 国家优先级」的前 10 个，剩下靠末尾 故障转移 兜底。
     const TELEGRAM_MAX_CONCRETE_MEMBERS = 10;
-    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular]
-        .slice(0, TELEGRAM_MAX_CONCRETE_MEMBERS);
+    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular].slice(
+        0,
+        TELEGRAM_MAX_CONCRETE_MEMBERS
+    );
 
     const telegramProxies = [...telegramConcrete, PROXY_GROUPS.FALLBACK];
 
