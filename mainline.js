@@ -315,6 +315,24 @@ https://github.com/powerfullz/override-rules
     ];
     const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
     const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
+    const TELEGRAM_MEASURED_ORDER = [
+      "花云-🇭🇰 香港高级 IEPL 专线 3",
+      "花云-🇭🇰 香港高级 IEPL 专线 2",
+      "LXYbkup-🇸🇬新加坡高速05|BGP|CTCUCM",
+      "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
+      "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
+      "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
+      "花云-🇭🇰 香港标准 IEPL 专线 2",
+      "花云-🇭🇰 香港高级 IEPL 专线 1",
+      "花云-🇭🇰 香港标准 IEPL 专线 5",
+      "LXYbkup-🇸🇬新加坡高速04|BGP|CTCUCM",
+      "花云-🇭🇰 香港标准 IEPL 专线 6",
+      "花云-🇭🇰 香港标准 IEPL 专线 4",
+      "花云-🇭🇰 香港标准 IEPL 专线 7",
+      "花云-🇭🇰 香港标准 IEPL 专线 1",
+      "花云-🇭🇰 香港标准 IEPL 专线 3",
+      "LXYbkup-🇯🇵日本高速02|CTCU|0.5x"
+    ];
     const isFlowerNode = (node) => Boolean(node.name?.startsWith("花云-"));
     const isExperimental = (node) => Boolean(node.name?.includes("实验性"));
     const isAdvanced = (node) => Boolean(node.name?.includes("高级"));
@@ -326,14 +344,19 @@ https://github.com/powerfullz/override-rules
     );
     const telegramLowCostFirst = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter(isExperimental)).map((node) => node.name).filter(isNotNull);
     const telegramRegular = telegramCandidatesByCountry.flatMap((nodes) => nodes.filter((node) => !isExperimental(node))).map((node) => node.name).filter(isNotNull);
-    const TELEGRAM_MAX_CONCRETE_MEMBERS = 10;
-    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular].slice(
-      0,
-      TELEGRAM_MAX_CONCRETE_MEMBERS
-    );
-    const TELEGRAM_BKUP_DIRECT_MEMBERS = 8;
-    const telegramBkupConcrete = bkupNodes.map((node) => node.name).filter(isNotNull).filter((name) => !telegramConcrete.includes(name)).slice(0, TELEGRAM_BKUP_DIRECT_MEMBERS);
-    const telegramProxies = telegramBkupConcrete.length ? [...telegramConcrete, ...telegramBkupConcrete] : [...telegramConcrete, PROXY_GROUPS.FALLBACK];
+    const telegramPool = [
+      ...telegramLowCostFirst,
+      ...telegramRegular,
+      ...bkupNodes.map((node) => node.name).filter(isNotNull)
+    ].filter((name, idx, arr) => arr.indexOf(name) === idx);
+    const measuredRank = new Map(TELEGRAM_MEASURED_ORDER.map((name, i) => [name, i]));
+    const telegramOrdered = [...telegramPool].sort((a, b) => {
+      const ia = measuredRank.get(a) ?? Number.MAX_SAFE_INTEGER;
+      const ib = measuredRank.get(b) ?? Number.MAX_SAFE_INTEGER;
+      return ia - ib;
+    });
+    const TELEGRAM_MAX_MEMBERS = 20;
+    const telegramProxies = telegramOrdered.length ? telegramOrdered.slice(0, TELEGRAM_MAX_MEMBERS) : [PROXY_GROUPS.FALLBACK];
     const groups = [
       // 1. 选择代理
       {
