@@ -95,6 +95,35 @@ export function buildProxyGroups({
     // 具体节点命中→持续使用（不打断 MTProto 长连接）；全失效→经 故障转移(含 bkup) 逃生。
     const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
 
+    // ── 实测优先顺序（2026-10-30 首版）────────────────────────────────────────
+    // fallback 只取**第一个健康节点**，所以顺序就是体验：排在前面 = 一直在用。
+    // 这份名单是拿 api.telegram.org 逐节点实测出来的（每节点 6 轮，成功率优先、
+    // 同为成功再比中位延迟），不是按名字猜的。刷新方法：
+    //     python3 ~/.hermes/scripts/telegram_rank_members.py --rounds 6
+    // 把输出的 TELEGRAM_MEASURED_ORDER 整段替换到这里，然后 build → push →
+    // purge jsDelivr → POST /api/sync/artifacts → mihomo-update.sh。
+    // 名单里没有的节点不会丢：未列出的按下面的原优先级追加在后面（新节点/新线路
+    // 先排在队尾，等下一轮重测再往上提）。全 6 轮失败的死点故意不列——
+    // 它们排最后也只会占探测预算。
+    const TELEGRAM_MEASURED_ORDER = [
+        "花云-🇭🇰 香港高级 IEPL 专线 3",
+        "花云-🇭🇰 香港高级 IEPL 专线 2",
+        "LXYbkup-🇸🇬新加坡高速05|BGP|CTCUCM",
+        "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
+        "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
+        "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
+        "花云-🇭🇰 香港标准 IEPL 专线 2",
+        "花云-🇭🇰 香港高级 IEPL 专线 1",
+        "花云-🇭🇰 香港标准 IEPL 专线 5",
+        "LXYbkup-🇸🇬新加坡高速04|BGP|CTCUCM",
+        "花云-🇭🇰 香港标准 IEPL 专线 6",
+        "花云-🇭🇰 香港标准 IEPL 专线 4",
+        "花云-🇭🇰 香港标准 IEPL 专线 7",
+        "花云-🇭🇰 香港标准 IEPL 专线 1",
+        "花云-🇭🇰 香港标准 IEPL 专线 3",
+        "LXYbkup-🇯🇵日本高速02|CTCU|0.5x",
+    ];
+
     const isFlowerNode = (node: ProxyNode) => Boolean(node.name?.startsWith("花云-"));
     const isExperimental = (node: ProxyNode) => Boolean(node.name?.includes("实验性"));
     const isAdvanced = (node: ProxyNode) => Boolean(node.name?.includes("高级"));
@@ -124,38 +153,30 @@ export function buildProxyGroups({
         .map((node) => node.name)
         .filter(isNotNull);
 
-    // 成员上限 10：组参数 interval 缩到 60s 后，成员数直接决定探测频率。
-    // 原来 51 个 × 300s ≈ 10 次/分钟；10 个 × 60s 保持同样开销，但退化只要 1 分钟就能换人。
-    // 取「低倍率优先 + 国家优先级」的前 10 个，剩下靠末尾 故障转移 兜底。
-    const TELEGRAM_MAX_CONCRETE_MEMBERS = 10;
-    const telegramConcrete = [...telegramLowCostFirst, ...telegramRegular].slice(
-        0,
-        TELEGRAM_MAX_CONCRETE_MEMBERS
-    );
+    // 候选池 = 花云候选（低倍率在前 + 国家优先级）+ bkup（LXY，另一家线路），去重。
+    // bkup 必须作为**具体节点**直接排进来：末尾塞「故障转移」组不会降级逃生
+    // （fallback 里嵌组，子组只剩死节点时父组仍停在子组上，2026-10-30 实测确认）。
+    const telegramPool = [
+        ...telegramLowCostFirst,
+        ...telegramRegular,
+        ...bkupNodes.map((node) => node.name).filter(isNotNull),
+    ].filter((name, idx, arr) => arr.indexOf(name) === idx);
 
-    // 2026-10-30 用户实测反馈：末尾那个「故障转移」组**从来没真正兜过底**。
-    // fallback 里嵌 fallback/url-test 不会降级逃生——子组只剩死节点时父组仍把
-    // Chain.now 停在子组上（实测停在 Child 不落到下一个成员）。要真兜底，成员必须是
-    // **具体节点**。所以这里把 bkup（LXY，与花云是两家不同线路）的节点直接排进来：
-    // 花云全挂时才轮到它们，但那时是真的换了一条线。
-    // 只取前几个，探测预算仍是成员数 × interval，18 × 60s ≈ 18 次/分钟可接受。
-    // 2026-10-30 实测：LXY 里日本 CTCU 0.5x 那批全是死点，**只有活着的节点才有兜底价值**，
-    // 死节点放进 fallback 等于白占坑。所以这里按「最近实测延迟」只挑活的：
-    //   新加坡专线/英国流媒体/美国流媒体 都是活且低延迟（452–876ms）；
-    //   日本 CTCU 0.5x、美国 CTCU 0.1x、台湾流媒体 全死，不选。
-    // 每周六 01:30 的 bkup 筛查 cron 会把连续两次死的节点从运行配置里剔除（见
-    // ~/.hermes/scripts/bkup_prune.sh），下次订阅刷新自动恢复——死点会被持续摘除。
-    const TELEGRAM_BKUP_DIRECT_MEMBERS = 8;
-    const telegramBkupConcrete = bkupNodes
-        .map((node) => node.name)
-        .filter(isNotNull)
-        .filter((name) => !telegramConcrete.includes(name))
-        .slice(0, TELEGRAM_BKUP_DIRECT_MEMBERS);
+    // 按实测名次重排：名单内的按名次，未列出的在原优先级后面（sort 稳定，相对顺序不变）。
+    // 这一条就是"成功率高的排前面"的落地——fallback 只取第一个健康节点，谁在前面就用谁。
+    const measuredRank = new Map(TELEGRAM_MEASURED_ORDER.map((name, i) => [name, i]));
+    const telegramOrdered = [...telegramPool].sort((a, b) => {
+        const ia = measuredRank.get(a) ?? Number.MAX_SAFE_INTEGER;
+        const ib = measuredRank.get(b) ?? Number.MAX_SAFE_INTEGER;
+        return ia - ib;
+    });
 
-    // 没有 bkup 节点时退回原结构（此时也没有别的线路可用）
-    const telegramProxies = telegramBkupConcrete.length
-        ? [...telegramConcrete, ...telegramBkupConcrete]
-        : [...telegramConcrete, PROXY_GROUPS.FALLBACK];
+    // 成员上限 20：探测预算 = 成员数 × interval，20 × 60s ≈ 20 次/分钟，与之前 18 个同量级。
+    // 留出余量给订阅里新出现的节点（它们排在队尾，等下一轮实测再往上提）。
+    const TELEGRAM_MAX_MEMBERS = 20;
+    const telegramProxies = telegramOrdered.length
+        ? telegramOrdered.slice(0, TELEGRAM_MAX_MEMBERS)
+        : [PROXY_GROUPS.FALLBACK];
 
     const groups: Array<ProxyGroup | null> = [
         // 1. 选择代理
