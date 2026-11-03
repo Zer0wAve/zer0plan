@@ -316,22 +316,28 @@ https://github.com/powerfullz/override-rules
     const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
     const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
     const TELEGRAM_MEASURED_ORDER = [
-      "花云-🇭🇰 香港高级 IEPL 专线 3",
-      "花云-🇭🇰 香港高级 IEPL 专线 2",
+      // 用户 2026-11-03 反馈花云近期体感差（发消息慢/超时），LXY 新加坡提到最前。
+      // 实测两侧同为 6/6 全过（LXY 800–880ms），故把 LXY 排头、花云 6/6 的五个紧随其后兜底。
       "LXYbkup-🇸🇬新加坡高速05|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
-      "花云-🇭🇰 香港标准 IEPL 专线 2",
-      "花云-🇭🇰 香港高级 IEPL 专线 1",
-      "花云-🇭🇰 香港标准 IEPL 专线 5",
       "LXYbkup-🇸🇬新加坡高速04|BGP|CTCUCM",
-      "花云-🇭🇰 香港标准 IEPL 专线 6",
-      "花云-🇭🇰 香港标准 IEPL 专线 4",
+      "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
+      "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
+      "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
+      "花云-🇭🇰 香港高级 IEPL 专线 3",
+      "花云-🇭🇰 香港标准 IEPL 专线 5",
       "花云-🇭🇰 香港标准 IEPL 专线 7",
+      "花云-🇭🇰 香港标准 IEPL 专线 8",
       "花云-🇭🇰 香港标准 IEPL 专线 1",
+      // 以下实测 5/6 及更差，排最后兜底
+      "花云-🇭🇰 香港高级 IEPL 专线 2",
+      "花云-🇭🇰 香港标准 IEPL 专线 6",
+      "花云-🇭🇰 香港标准 IEPL 专线 2",
       "花云-🇭🇰 香港标准 IEPL 专线 3",
-      "LXYbkup-🇯🇵日本高速02|CTCU|0.5x"
+      "花云-🇯🇵 日本高级 IEPL 专线 3",
+      "花云-🇯🇵 日本高级 IEPL 专线 2",
+      "花云-🇭🇰 香港高级 IEPL 专线 1",
+      "花云-🇯🇵 日本高级 IEPL 专线 1",
+      "花云-🇭🇰 香港标准 IEPL 专线 4"
     ];
     const isFlowerNode = (node) => Boolean(node.name?.startsWith("花云-"));
     const isExperimental = (node) => Boolean(node.name?.includes("实验性"));
