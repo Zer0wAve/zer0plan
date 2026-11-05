@@ -11,7 +11,6 @@ https://github.com/powerfullz/override-rules
 - full: 输出完整配置（适合纯内核启动，默认 false）
 - keepalive: 启用 tcp-keep-alive（默认 false）
 - fakeip: DNS 使用 FakeIP 模式（默认 true；传 false 时为 RedirHost）
-- quic: 允许 QUIC 流量（UDP 443，默认 false）
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
 - process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
@@ -232,7 +231,6 @@ https://github.com/powerfullz/override-rules
       fullConfig: parseBool(args.full),
       keepAliveEnabled: parseBool(args.keepalive),
       fakeIPEnabled: parseBool(args.fakeip, true),
-      quicEnabled: parseBool(args.quic),
       regexFilter: parseBool(args.regex),
       tunEnabled: parseBool(args.tun),
       processRulesEnabled: parseBool(args.process),
@@ -664,14 +662,11 @@ https://github.com/powerfullz/override-rules
   // src/rules.ts
   function buildRules({
     processRulesEnabled,
-    quicEnabled,
     countryNames
   }) {
     const acgripCountry = ACGRIP_COUNTRIES.find((c) => countryNames.includes(c));
     const rules = baseRules(acgripCountry ? `${acgripCountry}${NODE_SUFFIX}` : void 0);
-    const quicRejectRule = quicEnabled ? [] : ["AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"];
-    const merged = [...quicRejectRule, ...rules];
-    return processRulesEnabled ? [...processDirectRules, ...merged] : merged;
+    return processRulesEnabled ? [...processDirectRules, ...rules] : rules;
   }
   var ACGRIP_COUNTRIES, baseRules, processDirectRules;
   var init_rules = __esm({
@@ -1053,7 +1048,6 @@ https://github.com/powerfullz/override-rules
           fullConfig,
           keepAliveEnabled,
           fakeIPEnabled,
-          quicEnabled,
           regexFilter,
           tunEnabled,
           countryThreshold,
@@ -1108,7 +1102,7 @@ https://github.com/powerfullz/override-rules
           type: "select",
           proxies: globalProxies
         });
-        const finalRules = buildRules({ processRulesEnabled, quicEnabled, countryNames });
+        const finalRules = buildRules({ processRulesEnabled, countryNames });
         return {
           ...fullConfig && {
             "mixed-port": 7890,

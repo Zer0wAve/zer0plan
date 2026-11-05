@@ -5,7 +5,6 @@ export interface ScriptArgs {
     full?: string;
     keepalive?: string;
     fakeip?: string;
-    quic?: string;
     regex?: string;
     threshold?: string;
     tun?: string;
@@ -21,7 +20,6 @@ export interface FeatureFlags {
     fullConfig: boolean;
     keepAliveEnabled: boolean;
     fakeIPEnabled: boolean;
-    quicEnabled: boolean;
     regexFilter: boolean;
     countryThreshold: number;
     tunEnabled: boolean;

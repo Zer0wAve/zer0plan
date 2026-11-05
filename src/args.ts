@@ -29,7 +29,6 @@ export function buildFeatureFlags(args: ScriptArgs): FeatureFlags {
         fullConfig: parseBool(args.full),
         keepAliveEnabled: parseBool(args.keepalive),
         fakeIPEnabled: parseBool(args.fakeip, true),
-        quicEnabled: parseBool(args.quic),
         regexFilter: parseBool(args.regex),
         tunEnabled: parseBool(args.tun),
         processRulesEnabled: parseBool(args.process),

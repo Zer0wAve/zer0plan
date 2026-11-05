@@ -11,7 +11,6 @@ https://github.com/powerfullz/override-rules
 - full: 输出完整配置（适合纯内核启动，默认 false）
 - keepalive: 启用 tcp-keep-alive（默认 false）
 - fakeip: DNS 使用 FakeIP 模式（默认 true；传 false 时为 RedirHost）
-- quic: 允许 QUIC 流量（UDP 443，默认 false）
 - threshold: 地区节点数量小于该值时不显示分组 (默认 0)
 - regex: 使用正则过滤模式（include-all + filter）写入各地区代理组，而非直接枚举节点名称（默认 false）
 - process: 加入桌面端 PROCESS-NAME 直连规则（默认 false；iOS Stash 保持关闭）
@@ -63,7 +62,6 @@ function main(config: ClashConfig): ClashConfig {
         fullConfig,
         keepAliveEnabled,
         fakeIPEnabled,
-        quicEnabled,
         regexFilter,
         tunEnabled,
         countryThreshold,
@@ -123,7 +121,7 @@ function main(config: ClashConfig): ClashConfig {
         proxies: globalProxies,
     });
 
-    const finalRules = buildRules({ processRulesEnabled, quicEnabled, countryNames });
+    const finalRules = buildRules({ processRulesEnabled, countryNames });
 
     return {
         ...(fullConfig && {

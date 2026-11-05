@@ -91,19 +91,19 @@ https://cdn.jsdelivr.net/gh/Zer0wAve/zer0plan@main/wsl.yaml
 
 开启后会在规则顶部插入 18 条进程直连规则，并设置 `find-process-mode: strict`。桌面端 `wsl.yaml` 不再重复插入这些规则。
 
-## QUIC 拦截（`quic` 参数）
+## QUIC 拦截（已于 2026-11-04 移除）
 
-默认在规则最前面插入一条 `AND,((DST-PORT,443),(NETWORK,UDP)),REJECT`，屏蔽 QUIC / HTTP/3，让客户端回落到 TCP。
+**现在不再拦截 UDP/443，QUIC 全程放行。** 用户明确要求删掉这条设置。
 
-- **位置必须在最前**：UDP/443 要先于所有域名规则被裁决，否则已命中域名的 QUIC 会漏过去。
-- **mihomo 与 Stash 通用**：两者都支持 `AND` 组合与 `NETWORK`/`DST-PORT`。
-  手机端 `iosextra.yaml` 用的是 Stash 专有的 `SCRIPT,quic,REJECT`（等效且更高效），
-  该规则只对 Stash 生效，**mihomo 不支持 `SCRIPT`**（会报 `unsupported rule type`），故由本脚本统一生成 AND 规则兜底。
-- **`REJECT` 对 UDP 是静默丢包**，不发 ICMP（见 [mihomo#3211](https://github.com/MetaCubeX/mihomo/issues/3211)）。
-  客户端要等自己的 QUIC 超时再回落 TCP —— 拦截换来的是**行为确定**，不是「瞬间回落」。
-- **为什么默认拦**：实测本节点池中 QUIC 支持度参差（16 个采样里 8 通 8 不通，香港多通、日本/新加坡多不通）。
-  能通时 QUIC 约快 37%；但在不通的节点上客户端要经历 QUIC 试错才回落。拦截即消除这个不确定性。
-- 需要时传 `#quic=true` 放行（例如确认所连节点 UDP 质量良好）。
+历史做法是默认在规则最前面插入 `AND,((DST-PORT,443),(NETWORK,UDP)),REJECT`，屏蔽 QUIC / HTTP/3
+强制回落 TCP，理由是节点池里 QUIC 支持度参差、拦截能换来「行为确定」。代价是能通时那部分
+提速全丢，而 hysteria2 这类 UDP 代理本身就要走 UDP。现已从 `src/rules.ts` 与手机端
+`iosextra.yaml`（原先用 Stash 专有的 `SCRIPT,quic,REJECT`）一并删除，`quic` 参数随之作废。
+
+若将来又要屏蔽 QUIC，记得：规则**必须放最前**（UDP/443 要先于所有域名规则被裁决）；
+mihomo 的 `REJECT` 对 UDP 是静默丢包、不发 ICMP（[mihomo#3211](https://github.com/MetaCubeX/mihomo/issues/3211)），
+客户端要等自己的 QUIC 超时才回落；且 **mihomo 不支持 `SCRIPT` 规则**（会报 `unsupported rule type`），
+手机端 Stash 用的那种写法不能直接搬到桌面端。
 
 ## 更新 zer0direct
 
