@@ -61,12 +61,11 @@ for (const out of [jpOnly, tw, build([...mk("香港", 2), ...mk("日本", 2)])])
         }
     }
     assert.ok(!out.rules.some((r) => r.includes("undefined")), "no stringified-undefined rule");
-    // QUIC 拦截必须存在且位于最前（process 规则之后的第一条）。
-    const firstNonProcess = out.rules.find((r) => !r.startsWith("PROCESS-NAME,"));
-    assert.equal(
-        firstNonProcess,
-        "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT",
-        "QUIC reject must be the first non-process rule"
+    // QUIC 拦截已于 6cc1842（2026-11-05）删除：任何位置都不得再出现。
+    // 首条非进程规则可以是显式域名规则（如 acgrip 的 DOMAIN-SUFFIX），不钉死具体值。
+    assert.ok(
+        !out.rules.includes("AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"),
+        "QUIC reject rule must not reappear"
     );
 }
 

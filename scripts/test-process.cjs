@@ -2,6 +2,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 
+// QUIC 拦截已于 6cc1842（2026-11-05）整体删除，这里只保留常量用于
+// 断言「不得再出现」——历史实现曾把它放在规则首位。
 const QUIC_REJECT = "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT";
 
 for (const file of ["mainline.js", "mainline.min.js"]) {
@@ -23,15 +25,15 @@ for (const file of ["mainline.js", "mainline.min.js"]) {
             );
             assert(!output.rules.some((x) => x.includes("hybgzs.com")));
             const rest = output.rules.filter((x) => !x.startsWith("PROCESS-NAME,"));
-            // QUIC 默认拦截（quic 未传/false），必须位于规则最前面。
-            assert.equal(rest[0], QUIC_REJECT, `${file}: QUIC reject rule must be first`);
-            assert.equal(rest[1], "RULE-SET,zer0proxy,选择代理");
-            assert.equal(rest[2], "RULE-SET,zer0direct,DIRECT");
+            // QUIC 拦截已删除：任何参数组合都不得再出现这条规则。
+            assert.ok(!rest.includes(QUIC_REJECT), `${file}: QUIC reject must not reappear`);
+            assert.equal(rest[0], "RULE-SET,zer0proxy,选择代理");
+            assert.equal(rest[1], "RULE-SET,zer0direct,DIRECT");
         }
     }
 }
 
-// quic=true 时必须放行：不得出现拦截规则，zer0proxy 回到首位。
+// 历史参数 quic=true 已无意义（功能删除），仍需保证不出现拦截规则。
 for (const file of ["mainline.js", "mainline.min.js"]) {
     const context = { $arguments: { quic: "true" } };
     vm.createContext(context);
