@@ -13,6 +13,14 @@ const baseRules = (acgripGroup: string | undefined): string[] => [
     ...(acgripGroup ? [`DOMAIN-SUFFIX,acgrip.com,${acgripGroup}`] : []),
     // Explicit proxy exceptions take precedence over broad direct domains.
     `RULE-SET,zer0proxy,${PROXY_GROUPS.SELECT}`,
+    // 叮咚买菜（上海壹佰米网络科技，证书 *.ddxq.mobi / *.100.me 已核）内联直连。
+    // 为什么不只写进 zer0direct.yaml：那是 http provider，interval=86400，客户端
+    // 拉到一次就缓存 24 小时；手机 Stash 更新订阅也不会重下 ruleset，
+    // 导致「规则改了但手机不生效」。内联进主配置则每次订阅更新都跟着下发。
+    // 国内 CDN（华为云/自建 elb），fake-ip 下 GEOIP,cn 判不出会落 Final 走代理→用不了。
+    `DOMAIN-SUFFIX,ddxq.mobi,DIRECT`,
+    `DOMAIN-SUFFIX,ddimg.mobi,DIRECT`,
+    `DOMAIN-SUFFIX,100.me,DIRECT`,
     `RULE-SET,zer0direct,DIRECT`,
     `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
