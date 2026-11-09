@@ -27,20 +27,8 @@ for (const file of ["mainline.js", "mainline.min.js"]) {
             const rest = output.rules.filter((x) => !x.startsWith("PROCESS-NAME,"));
             // QUIC 拦截已删除：任何参数组合都不得再出现这条规则。
             assert.ok(!rest.includes(QUIC_REJECT), `${file}: QUIC reject must not reappear`);
-            // 顺序契约：zer0proxy 必须最前（显式代理例外优先于宽泛直连）。
-            // zer0direct 之前允许夹「有注释说明理由的内联 DOMAIN-SUFFIX,...,DIRECT」，
-            // 那是刻意为之（绕开 provider 的 86400 缓存）；除此之外不允许任何规则插到
-            // zer0proxy 前面，也不允许 zer0direct 被挤到内联直连之后太远。
             assert.equal(rest[0], "RULE-SET,zer0proxy,选择代理");
-            const directIdx = rest.indexOf("RULE-SET,zer0direct,DIRECT");
-            assert.ok(directIdx > 0, `${file}: zer0direct must exist after zer0proxy`);
-            const between = rest.slice(1, directIdx);
-            const unexpected = between.filter((r) => !/^DOMAIN-SUFFIX,[^,]+,DIRECT$/.test(r));
-            assert.equal(
-                unexpected.length,
-                0,
-                `${file}: only inline DOMAIN-SUFFIX,DIRECT may sit between zer0proxy and zer0direct, got: ${JSON.stringify(unexpected)}`
-            );
+            assert.equal(rest[1], "RULE-SET,zer0direct,DIRECT");
         }
     }
 }
