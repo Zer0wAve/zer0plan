@@ -50,3 +50,10 @@ payload:
   - '+.cloudflare-gateway.com'
   - '+.cloudflare-ech.com'
   - '+.ubits.club'
+  # ── 叮咚买菜（上海壹佰米网络科技，证书 *.ddxq.mobi / *.100.me 已核）──
+  # 国内 CDN（华为云/自建 elb），直连 50–190ms。手机端 fake-ip + 系统代理模式下
+  # GEOIP,cn 判不出来 → 掉进 MATCH,Final 走代理 → 买菜用不了。按域名硬直连。
+  # 实测（2026-11-09）：直连与代理均 200 且耗时相当，加直连不会变慢。
+  - '+.ddxq.mobi'
+  - '+.ddimg.mobi'
+  - '+.100.me'
