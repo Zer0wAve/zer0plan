@@ -35,17 +35,11 @@ for (const file of ["mainline.js", "mainline.min.js"]) {
             const directIdx = rest.indexOf("RULE-SET,zer0direct,DIRECT");
             assert.ok(directIdx > 0, `${file}: zer0direct must exist after zer0proxy`);
             const between = rest.slice(1, directIdx);
-            // 允许夹在中间的内联直连：DOMAIN-SUFFIX（覆盖整棵子域）与 DOMAIN（精确）。
-            // DOMAIN 是必需的：Stash 对 domain 类规则做「最长后缀优先」，
-            // ADBlock 里 `+.trackercollect.ddxq.mobi` 比 `+.ddxq.mobi` 更长会压过去，
-            // 只有同等精确度的精确规则才能拿下（实测 pubgw 通、trackercollect 被 REJECT）。
-            const unexpected = between.filter(
-                (r) => !/^DOMAIN(-SUFFIX)?,[^,]+,DIRECT$/.test(r)
-            );
+            const unexpected = between.filter((r) => !/^DOMAIN-SUFFIX,[^,]+,DIRECT$/.test(r));
             assert.equal(
                 unexpected.length,
                 0,
-                `${file}: only inline DOMAIN/DOMAIN-SUFFIX,...,DIRECT may sit between zer0proxy and zer0direct, got: ${JSON.stringify(unexpected)}`
+                `${file}: only inline DOMAIN-SUFFIX,DIRECT may sit between zer0proxy and zer0direct, got: ${JSON.stringify(unexpected)}`
             );
         }
     }
