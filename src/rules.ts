@@ -21,6 +21,13 @@ const baseRules = (acgripGroup: string | undefined): string[] => [
     `DOMAIN-SUFFIX,ddxq.mobi,DIRECT`,
     `DOMAIN-SUFFIX,ddimg.mobi,DIRECT`,
     `DOMAIN-SUFFIX,100.me,DIRECT`,
+    // 精确匹配兜底：ADBlock 规则集里有 `+.trackercollect.ddxq.mobi` 和
+    // `+.trackerfeed.ddxq.mobi`（叮咚埋点上报，被当追踪器）。Stash 对 domain 类规则
+    // 做「最长后缀优先」，上面那条 `+.ddxq.mobi` 会被更长的那条压过去 → REJECT。
+    // 实测：同域下 pubgw.api.ddxq.mobi 走 zer0direct 正常，trackercollect 却 REJECT。
+    // 所以必须用同等精确度的 DOMAIN 规则，靠「内联规则先于规则集」拿下它。
+    `DOMAIN,trackercollect.ddxq.mobi,DIRECT`,
+    `DOMAIN,trackerfeed.ddxq.mobi,DIRECT`,
     `RULE-SET,zer0direct,DIRECT`,
     `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
