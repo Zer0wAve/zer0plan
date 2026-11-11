@@ -67,5 +67,10 @@ disable-keep-alive: false
   # 实为 Stash 侧的处理问题（已由用户上报作者；该规则在 mihomo 上工作正常）。
   # 这里用显式域名规则兜住它（DOMAIN-SUFFIX 覆盖整棵子域树），
   # 排在 GEOIP,private 之前即可命中，不必等上游收录或 Stash 修复。
-  # TODO(临时)：Stash 修复后可删除本条；仅存在于手机端 Stash 覆写，不影响桌面 mihomo。
+  # TODO(临时)：Stash 修复后可删除本条；仅存在于手机端 Stash覆写，不影响桌面 mihomo。
   - DOMAIN-SUFFIX,metaaivm.com,AI服务
+  # Apple 地图 / 定位 / 系统静态资源直连（避免 17.x 段漏出 GEOIP,cn 落入 Final/StaticResources 走低倍率代理卡死；
+  # 同步已写入 zer0direct.yaml，此处确保手机端绕过 jsDelivr 缓存立即生效）
+  - DOMAIN-SUFFIX,ls.apple.com,DIRECT
+  - DOMAIN,sequoia.cdn-apple.com,DIRECT
+  - DOMAIN,lcdn-locator.apple.com,DIRECT

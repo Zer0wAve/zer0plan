@@ -37,8 +37,10 @@ payload:
   - aod.itunes.apple.com
   - audio-ssl.itunes.apple.com
   - streamingaudio.itunes.apple.com
-  # Apple 地图 / 定位服务（17.x 苹果自有段逃出 GEOIP,cn，落入 Final 会走低倍率代理超时卡死）
+  # Apple 地图 / 定位 / 系统资源直连（17.x 苹果自有段逃出 GEOIP,cn，落入 Final 或 StaticResources 会走低倍率代理超时卡死）
   - '+.ls.apple.com'
+  - sequoia.cdn-apple.com
+  - lcdn-locator.apple.com
   - '+.longbridge.cn'
   - '+.lbctrl.com'
   - '+.elysiver.h-e.top'
