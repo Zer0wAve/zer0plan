@@ -74,3 +74,5 @@ disable-keep-alive: false
   - DOMAIN-SUFFIX,ls.apple.com,DIRECT
   - DOMAIN,sequoia.cdn-apple.com,DIRECT
   - DOMAIN,lcdn-locator.apple.com,DIRECT
+  - DOMAIN-SUFFIX,autonavi.com,DIRECT
+  - DOMAIN-SUFFIX,amap.com,DIRECT

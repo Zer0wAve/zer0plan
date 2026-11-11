@@ -41,6 +41,8 @@ payload:
   - '+.ls.apple.com'
   - sequoia.cdn-apple.com
   - lcdn-locator.apple.com
+  - '+.autonavi.com'
+  - '+.amap.com'
   - '+.longbridge.cn'
   - '+.lbctrl.com'
   - '+.elysiver.h-e.top'
