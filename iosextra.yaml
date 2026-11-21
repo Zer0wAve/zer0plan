@@ -76,3 +76,13 @@ disable-keep-alive: false
   - DOMAIN,lcdn-locator.apple.com,DIRECT
   - DOMAIN-SUFFIX,autonavi.com,DIRECT
   - DOMAIN-SUFFIX,amap.com,DIRECT
+
+# ===== Google One：MITM + 响应正文重写（照搬小火箭「土区 Ultra」写法）=====
+# 作用：改写 one.google.com/ai 的响应正文，把套餐标识 30tb.ai.pro.m / 20tb.m.v2
+#      换成普通档标识，让 Google One App 认为当前不是 AI Pro，从而弹出 Ultra 升级入口。
+# 仅影响 App 显示与升级入口，真实权益仍由服务端判定；前提是 Stash 已安装并信任 MITM CA。
+http:
+  mitm+:
+    - one.google.com
+  body-rewrite:
+    - '^https://one\.google\.com/ai($|\?) response-replace-regex 30tb\.ai\.pro\.m 30tb.m 20tb\.m\.v2 20tb.m'
