@@ -130,14 +130,16 @@ export function buildProxyGroups({
         "花云-🇯🇵 日本高级 IEPL 专线 1",
     ];
 
-    const isFlowerNode = (node: ProxyNode) => Boolean(node.name?.startsWith("花云-"));
+    // 主池节点：兼容旧花云（花云-）与新主用良心云（LXY-）
+    const isMainPoolNode = (node: ProxyNode) =>
+        Boolean(node.name?.startsWith("花云-") || node.name?.startsWith("LXY-"));
     const isExperimental = (node: ProxyNode) => Boolean(node.name?.includes("实验性"));
     const isAdvanced = (node: ProxyNode) => Boolean(node.name?.includes("高级"));
 
     // 每个优先国家内的候选节点（实验性节点仅在手机手动模式下纳入）。
     const telegramCandidatesByCountry = telegramPreferredCountries.map((country) =>
         (countryNodes[country] || [])
-            .filter((node) => isFlowerNode(node) && (telegramManual || !isExperimental(node)))
+            .filter((node) => isMainPoolNode(node) && (telegramManual || !isExperimental(node)))
             .sort((a, b) => {
                 // 国家内优先级：实验性(低倍率) > 高级 > 标准
                 const rank = (node: ProxyNode) =>

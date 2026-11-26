@@ -337,11 +337,11 @@ https://github.com/powerfullz/override-rules
       "花云-🇭🇰 香港标准 IEPL 专线 8",
       "花云-🇯🇵 日本高级 IEPL 专线 1"
     ];
-    const isFlowerNode = (node) => Boolean(node.name?.startsWith("花云-"));
+    const isMainPoolNode = (node) => Boolean(node.name?.startsWith("花云-") || node.name?.startsWith("LXY-"));
     const isExperimental = (node) => Boolean(node.name?.includes("实验性"));
     const isAdvanced = (node) => Boolean(node.name?.includes("高级"));
     const telegramCandidatesByCountry = telegramPreferredCountries.map(
-      (country) => (countryNodes[country] || []).filter((node) => isFlowerNode(node) && (telegramManual || !isExperimental(node))).sort((a, b) => {
+      (country) => (countryNodes[country] || []).filter((node) => isMainPoolNode(node) && (telegramManual || !isExperimental(node))).sort((a, b) => {
         const rank = (node) => isExperimental(node) ? 0 : isAdvanced(node) ? 1 : 2;
         return rank(a) - rank(b);
       })
