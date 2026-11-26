@@ -460,12 +460,15 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: defaultProxies
       },
-      // 10. 谷歌服务
+      // 10. 谷歌服务：默认美国节点，避免台湾/香港节点 GeoIP 漂移导致 Google 账号送港
       {
         name: PROXY_GROUPS.GOOGLE,
         icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
         type: "select",
-        proxies: defaultProxies
+        proxies: countryNames.includes("美国") ? [
+          `美国${NODE_SUFFIX}`,
+          ...defaultProxies.filter((p) => p !== `美国${NODE_SUFFIX}`)
+        ] : defaultProxies
       },
       // 11. 微软服务
       {
