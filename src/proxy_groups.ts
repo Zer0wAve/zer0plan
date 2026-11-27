@@ -321,13 +321,17 @@ export function buildProxyGroups({
             type: "select",
             proxies: defaultProxies,
         },
-        // 10. 谷歌服务：与 AI服务共用同一安全出口池（已知送中节点全部排除），
-        //     默认优先安全池里的美国节点；安全池为空时 REJECT，不回落到通用美国组。
+        // 10. 谷歌服务：与 AI服务共用同一安全出口池（已知送中节点全部排除）。
+        //     默认入口是 Google故障转移（同池具体节点 + Google 健康检查），避免 select 停在
+        //     某个已失效的节点上；安全池为空时 REJECT，不回落到通用美国组。
         {
             name: PROXY_GROUPS.GOOGLE,
             icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
             type: "select",
-            proxies: googleSafeProxies.length > 0 ? googleSafeProxies : [REJECT_TARGET],
+            proxies:
+                googleSafeProxies.length > 0
+                    ? [PROXY_GROUPS.GOOGLE_FALLBACK, ...googleSafeProxies]
+                    : [REJECT_TARGET],
         },
         // 11. 微软服务
         {
@@ -442,6 +446,18 @@ export function buildProxyGroups({
             type: "fallback",
             url: SPEEDTEST_URL,
             proxies: aiSafeMembers,
+            interval: 60,
+            tolerance: 20,
+            lazy: true,
+        },
+        // Google故障转移：与 AI 同一安全池（美国优先），健康检查打 Google 自身端点，
+        // 避免 select 默认停在已失效的节点上。
+        {
+            name: PROXY_GROUPS.GOOGLE_FALLBACK,
+            icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
+            type: "fallback",
+            url: "https://www.google.com/generate_204",
+            proxies: googleSafeProxies.length > 0 ? googleSafeProxies : [REJECT_TARGET],
             interval: 60,
             tolerance: 20,
             lazy: true,

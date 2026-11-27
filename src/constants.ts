@@ -23,6 +23,7 @@ export const PROXY_GROUPS = {
     LANDING: "落地节点",
     STATIC_RESOURCES: "静态资源",
     GOOGLE: "谷歌服务",
+    GOOGLE_FALLBACK: "Google故障转移",
     MICROSOFT: "微软服务",
     BILIBILI: "哔哩哔哩",
     XBOX: "Xbox",

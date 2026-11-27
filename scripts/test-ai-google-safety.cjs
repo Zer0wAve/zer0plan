@@ -101,12 +101,18 @@ for (const file of files) {
     assert.ok(!group(config, "AI故障转移").proxies.includes(BAD));
     assert.ok(!group(config, "谷歌服务").proxies.includes(BAD));
     assert.equal(group(config, "谷歌服务").type, "select");
-    // Google 默认优先美国安全节点
+    // Google 默认入口是 Google故障转移（同池、Google 健康检查），且其成员美国优先
     assert.equal(
         group(config, "谷歌服务").proxies[0],
-        SAFE_US,
-        `${file}: 谷歌服务 未优先美国安全节点`
+        "Google故障转移",
+        `${file}: 谷歌服务 默认入口不是安全池故障转移`
     );
+    assert.equal(
+        group(config, "Google故障转移").proxies[0],
+        SAFE_US,
+        `${file}: Google 安全池未美国优先`
+    );
+    assert.ok(!group(config, "Google故障转移").proxies.includes(BAD));
 
     // ── 普通用途保留：节点仍在 proxies，且普通入口可达 ────────────────────
     assert.ok(
@@ -130,6 +136,7 @@ for (const file of files) {
         ["REJECT"],
         `${file}: Google 空池未 fail closed`
     );
+    assert.deepEqual([...group(onlyBad, "Google故障转移").proxies], ["REJECT"]);
     for (const entry of ["AI服务", "谷歌服务"]) {
         const leaves = reachableLeaves(onlyBad, entry);
         assert.ok(!leaves.has("DIRECT") && !leaves.has(BAD), `${file}: ${entry} 空池回落了`);
