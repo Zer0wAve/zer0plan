@@ -73,7 +73,7 @@ https://github.com/powerfullz/override-rules
   });
 
   // src/constants.ts
-  var NODE_SUFFIX, CDN_URL, SPEEDTEST_URL, LOW_COST_NODE_MATCHER, PROXY_GROUPS, countriesMeta;
+  var NODE_SUFFIX, CDN_URL, SPEEDTEST_URL, REJECT_TARGET, LOW_COST_NODE_MATCHER, PROXY_GROUPS, countriesMeta;
   var init_constants = __esm({
     "src/constants.ts"() {
       "use strict";
@@ -81,6 +81,7 @@ https://github.com/powerfullz/override-rules
       NODE_SUFFIX = "节点";
       CDN_URL = "https://cdn.jsdelivr.net";
       SPEEDTEST_URL = "https://cp.cloudflare.com";
+      REJECT_TARGET = "REJECT";
       LOW_COST_NODE_MATCHER = createCaseInsensitiveNodeMatcher(
         String.raw`0\.[0-5]|低倍率|省流|实验性`
       );
@@ -245,6 +246,22 @@ https://github.com/powerfullz/override-rules
     }
   });
 
+  // src/node_policy.ts
+  function isKnownGeoipCnNode(name) {
+    return Boolean(name && KNOWN_GEOIP_CN_SET.has(name.trim()));
+  }
+  var KNOWN_GEOIP_CN_NODES, KNOWN_GEOIP_CN_SET;
+  var init_node_policy = __esm({
+    "src/node_policy.ts"() {
+      "use strict";
+      KNOWN_GEOIP_CN_NODES = [
+        // 2026-11-27：Gemini/aicode 报 LOCATION_NOT_ELIGIBLE、detected_location=CN。
+        "LXY-🇺🇸美国01|流媒体|0.1x"
+      ];
+      KNOWN_GEOIP_CN_SET = new Set(KNOWN_GEOIP_CN_NODES.map((name) => name.trim()));
+    }
+  });
+
   // src/proxy_groups.ts
   function buildGroupByType({
     name,
@@ -311,7 +328,23 @@ https://github.com/powerfullz/override-rules
       "法国",
       "澳大利亚"
     ];
-    const aiProxies = aiPreferredCountries.filter((country) => countryNames.includes(country)).map((country) => `${country}${NODE_SUFFIX}`);
+    const aiSafeProxies = [
+      ...aiPreferredCountries.flatMap(
+        (country) => (countryNodes[country] || []).map((node) => node.name)
+      ),
+      // bkup 是独立池（parseBkupNodes 已从 activeNodes 移出），原先经 BKUP 组间接可达；
+      // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
+      ...bkupNodes.map((node) => node.name)
+    ].filter(isNotNull).filter((name) => !isKnownGeoipCnNode(name)).filter((name, idx, arr) => arr.indexOf(name) === idx);
+    const aiSafeMembers = aiSafeProxies.length > 0 ? aiSafeProxies : [REJECT_TARGET];
+    const googleSafeProxies = [
+      ...aiSafeProxies.filter(
+        (name) => (countryNodes["美国"] || []).some((n) => n.name === name)
+      ),
+      ...aiSafeProxies.filter(
+        (name) => !(countryNodes["美国"] || []).some((n) => n.name === name)
+      )
+    ];
     const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
     const TELEGRAM_MEASURED_ORDER = [
       // 2026-11-08 16:2x 重测（每节点 8 轮，探针 https://api.telegram.org/bot）。
@@ -407,12 +440,13 @@ https://github.com/powerfullz/override-rules
         tolerance: 20,
         lazy: true
       },
-      // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
+      // 5. AI服务：默认使用列表末尾的 AI故障转移；手选候选也只列安全池里的具体节点，
+      //    不再挂“美国节点”等地区组（组内会包含已知送中节点，成为绕过排除的路径）。
       {
         name: PROXY_GROUPS.AI_SERVICE,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
         type: "select",
-        proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies]
+        proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiSafeMembers]
       },
       // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
       //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
@@ -460,15 +494,13 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: defaultProxies
       },
-      // 10. 谷歌服务：默认美国节点，避免台湾/香港节点 GeoIP 漂移导致 Google 账号送港
+      // 10. 谷歌服务：与 AI服务共用同一安全出口池（已知送中节点全部排除），
+      //     默认优先安全池里的美国节点；安全池为空时 REJECT，不回落到通用美国组。
       {
         name: PROXY_GROUPS.GOOGLE,
         icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
         type: "select",
-        proxies: countryNames.includes("美国") ? [
-          `美国${NODE_SUFFIX}`,
-          ...defaultProxies.filter((p) => p !== `美国${NODE_SUFFIX}`)
-        ] : defaultProxies
+        proxies: googleSafeProxies.length > 0 ? googleSafeProxies : [REJECT_TARGET]
       },
       // 11. 微软服务
       {
@@ -567,13 +599,14 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: [PROXY_GROUPS.SELECT, "DIRECT"]
       },
-      // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
+      // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（美国优先），
+      // 不再嵌 bkup 组——嵌套组会绕开已知送中排除。
       {
         name: PROXY_GROUPS.AI_FALLBACK,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
         type: "fallback",
         url: SPEEDTEST_URL,
-        proxies: [...aiProxies, ...hasBkup ? [PROXY_GROUPS.BKUP] : []],
+        proxies: aiSafeMembers,
         interval: 60,
         tolerance: 20,
         lazy: true
@@ -585,6 +618,7 @@ https://github.com/powerfullz/override-rules
     "src/proxy_groups.ts"() {
       "use strict";
       init_constants();
+      init_node_policy();
       init_utils();
     }
   });

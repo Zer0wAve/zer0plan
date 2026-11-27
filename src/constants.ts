@@ -4,6 +4,8 @@ import { createCaseInsensitiveNodeMatcher } from "./utils";
 export const NODE_SUFFIX = "节点";
 export const CDN_URL = "https://cdn.jsdelivr.net";
 export const SPEEDTEST_URL = "https://cp.cloudflare.com";
+// AI/Google 安全池为空时的 fail-closed 目标：阻断，而不是回落到通用池或 DIRECT。
+export const REJECT_TARGET = "REJECT";
 
 export const LOW_COST_NODE_MATCHER = createCaseInsensitiveNodeMatcher(
     String.raw`0\.[0-5]|低倍率|省流|实验性`

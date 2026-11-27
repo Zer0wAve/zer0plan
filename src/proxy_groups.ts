@@ -4,8 +4,10 @@ import {
     LOW_COST_NODE_MATCHER,
     NODE_SUFFIX,
     PROXY_GROUPS,
+    REJECT_TARGET,
     countriesMeta,
 } from "./constants";
+import { isKnownGeoipCnNode } from "./node_policy";
 import type { BuildProxyGroupsInput, GroupType, ProxyGroup, ProxyNode } from "./types";
 import { isNotNull } from "./utils";
 
@@ -72,8 +74,10 @@ export function buildProxyGroups({
     const hasHK = countryNames.includes("香港");
     const hasBkup = bkupNodes.length > 0;
 
+    // AI 与 Google 共用的安全出口池：只放具体节点，绝不嵌地区组/低倍率组/故障转移/
+    // 选择代理——那些组会把已知送中节点重新带回来（美国01 就是这么被选中的）。
     // 仅列入 OpenAI、Anthropic 与 Gemini API 当前均明确支持的保守地区。
-    // 故意排除香港、台湾、俄罗斯、低倍率和 DIRECT，避免 AI 服务触发地区限制或出口漂移。
+    // 故意排除香港、台湾、俄罗斯与 DIRECT，避免 AI 服务触发地区限制或出口漂移。
     const aiPreferredCountries = [
         "美国",
         "新加坡",
@@ -85,9 +89,33 @@ export function buildProxyGroups({
         "法国",
         "澳大利亚",
     ];
-    const aiProxies = aiPreferredCountries
-        .filter((country) => countryNames.includes(country))
-        .map((country) => `${country}${NODE_SUFFIX}`);
+
+    // 已知送中节点对 AI/Google 不可用，但仍保留在 proxies 和普通组里。
+    const aiSafeProxies = [
+        ...aiPreferredCountries.flatMap((country) =>
+            (countryNodes[country] || []).map((node) => node.name)
+        ),
+        // bkup 是独立池（parseBkupNodes 已从 activeNodes 移出），原先经 BKUP 组间接可达；
+        // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
+        ...bkupNodes.map((node) => node.name),
+    ]
+        .filter(isNotNull)
+        .filter((name) => !isKnownGeoipCnNode(name))
+        .filter((name, idx, arr) => arr.indexOf(name) === idx);
+
+    // 安全池为空时 fail closed：REJECT，绝不回落到通用地区组、选择代理或 DIRECT。
+    const aiSafeMembers = aiSafeProxies.length > 0 ? aiSafeProxies : [REJECT_TARGET];
+
+    // Google 默认仍优先美国（避免台湾/香港 GeoIP 漂移导致账号送港），但只在美国
+    // 安全节点里挑；美国无安全节点时按安全池顺序。
+    const googleSafeProxies = [
+        ...aiSafeProxies.filter((name) =>
+            (countryNodes["美国"] || []).some((n) => n.name === name)
+        ),
+        ...aiSafeProxies.filter(
+            (name) => !(countryNodes["美国"] || []).some((n) => n.name === name)
+        ),
+    ];
 
     // Telegram 组 = fallback，成员是具体节点（按国家优先级展开），最后兜底 故障转移。
     // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
@@ -235,12 +263,13 @@ export function buildProxyGroups({
             tolerance: 20,
             lazy: true,
         },
-        // 5. AI服务：默认使用列表末尾的 AI故障转移，也保留按国家手动选择
+        // 5. AI服务：默认使用列表末尾的 AI故障转移；手选候选也只列安全池里的具体节点，
+        //    不再挂“美国节点”等地区组（组内会包含已知送中节点，成为绕过排除的路径）。
         {
             name: PROXY_GROUPS.AI_SERVICE,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
             type: "select",
-            proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiProxies],
+            proxies: [PROXY_GROUPS.AI_FALLBACK, ...aiSafeMembers],
         },
         // 6. Telegram：独立 fallback 组。以 Telegram Bot API 本身作为健康检查目标，
         //    第一次实际连接失败即触发复检；保持 fallback 而非 url-test，避免稳定时主动换节点。
@@ -292,17 +321,13 @@ export function buildProxyGroups({
             type: "select",
             proxies: defaultProxies,
         },
-        // 10. 谷歌服务：默认美国节点，避免台湾/香港节点 GeoIP 漂移导致 Google 账号送港
+        // 10. 谷歌服务：与 AI服务共用同一安全出口池（已知送中节点全部排除），
+        //     默认优先安全池里的美国节点；安全池为空时 REJECT，不回落到通用美国组。
         {
             name: PROXY_GROUPS.GOOGLE,
             icon: `${CDN_URL}/gh/Orz-3/mini@master/Color/Google.png`,
             type: "select",
-            proxies: countryNames.includes("美国")
-                ? [
-                      `美国${NODE_SUFFIX}`,
-                      ...defaultProxies.filter((p) => p !== `美国${NODE_SUFFIX}`),
-                  ]
-                : defaultProxies,
+            proxies: googleSafeProxies.length > 0 ? googleSafeProxies : [REJECT_TARGET],
         },
         // 11. 微软服务
         {
@@ -409,13 +434,14 @@ export function buildProxyGroups({
             type: "select",
             proxies: [PROXY_GROUPS.SELECT, "DIRECT"],
         },
-        // AI故障转移固定放在所有策略组最后；美国优先，bkup 仅作最终兜底。
+        // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（美国优先），
+        // 不再嵌 bkup 组——嵌套组会绕开已知送中排除。
         {
             name: PROXY_GROUPS.AI_FALLBACK,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
             type: "fallback",
             url: SPEEDTEST_URL,
-            proxies: [...aiProxies, ...(hasBkup ? [PROXY_GROUPS.BKUP] : [])],
+            proxies: aiSafeMembers,
             interval: 60,
             tolerance: 20,
             lazy: true,
