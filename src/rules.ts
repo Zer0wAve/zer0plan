@@ -16,6 +16,18 @@ const baseRules = (acgripGroup: string | undefined): string[] => [
     `RULE-SET,zer0direct,DIRECT`,
     `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
     `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
+    // Narrow exceptions for service-owned assets also matched by generic CDN rules.
+    `DOMAIN,cdn.openai.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,status.claude.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,a-cdn.anthropic.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,aicode.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,cloudcode-pa.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,daily-cloudcode-pa.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN,generativelanguage.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+    `DOMAIN-SUFFIX,googleusercontent.com,${PROXY_GROUPS.GOOGLE}`,
+    ...["ajax", "fonts", "chart", "safebrowsing"].map(
+        (service) => `DOMAIN,${service}.googleapis.com,${PROXY_GROUPS.GOOGLE}`
+    ),
     `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
     `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
     `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,

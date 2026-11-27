@@ -8,6 +8,7 @@ import {
     countriesMeta,
 } from "./constants";
 import { AI_GOOGLE_PREFERRED_NODE_NAMES, isAiGoogleExcludedNode } from "./node_policy";
+import { parseCountries } from "./node_parser";
 import type { BuildProxyGroupsInput, GroupType, ProxyGroup, ProxyNode } from "./types";
 import { isNotNull } from "./utils";
 
@@ -92,13 +93,15 @@ export function buildProxyGroups({
 
     // 已登记风险节点（确证 CN 或 AI/Google 旁证，见 node_policy）对 AI/Google 不可用，
     // 但仍保留在 proxies 和普通组里。
+    const bkupCountries = parseCountries(bkupNodes);
     const aiRawSafeProxies = [
         ...aiPreferredCountries.flatMap((country) =>
             (countryNodes[country] || []).map((node) => node.name)
         ),
-        // bkup 是独立池（parseBkupNodes 已从 activeNodes 移出），原先经 BKUP 组间接可达；
-        // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
-        ...bkupNodes.map((node) => node.name),
+        // Apply the same country policy to backup leaves without affecting the ordinary bkup group.
+        ...aiPreferredCountries.flatMap((country) =>
+            (bkupCountries[country] || []).map((node) => node.name)
+        ),
     ]
         .filter(isNotNull)
         .filter((name) => !isAiGoogleExcludedNode(name))

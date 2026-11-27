@@ -11,6 +11,7 @@ const BAD_LA = "LXY-🇺🇸美国洛杉矶01|流媒体|0.01x";
 const BAD_SG_HS = "LXY-🇸🇬新加坡高速02|BGP|CTCUCM";
 const SAFE_US = "测试-🇺🇸美国干净01";
 const SAFE_US_BKUP = "LXYbkup-🇺🇸美国03|BGP|CTCUCM";
+const OUTSIDE_AI_BKUP = "PPGbkup-俄罗斯01";
 const SAFE_SG = "LXY-🇸🇬新加坡01|流媒体|0.1x";
 const SAFE_JP = "花云-🇯🇵 日本标准 IEPL 专线 1";
 const VERIFIED_SG = "LXY-🇸🇬新加坡专线01|BGP|流媒体";
@@ -76,6 +77,7 @@ for (const file of files) {
         mk(SAFE_SG),
         mk(SAFE_JP),
         mk(SAFE_US_BKUP),
+        mk(OUTSIDE_AI_BKUP),
         mk("花云-🇭🇰 香港标准 IEPL 专线 1"),
         mk("花云-🇹🇼 台湾标准 IEPL 专线 1"),
     ]);
@@ -87,6 +89,7 @@ for (const file of files) {
         }
         // 除 REJECT 外，所有可达叶子都必须是具体节点（不得出现 DIRECT）
         assert.ok(!leaves.has("DIRECT"), `${file}: ${entry} 可达 DIRECT`);
+        assert.ok(leaves.has(SAFE_US_BKUP) && !leaves.has(OUTSIDE_AI_BKUP));
         assert.ok(leaves.size > 1, `${file}: ${entry} 安全池过小，测试样本不足`);
     }
 
@@ -128,6 +131,18 @@ for (const file of files) {
     );
     for (const entry of ["选择代理", "手动选择", "故障转移", "GLOBAL"]) {
         assert.ok(reachableLeaves(config, entry).has(BAD), `${file}: ${entry} 不再可达坏节点`);
+    }
+
+    assert.ok(reachableLeaves(config, "选择代理").has(OUTSIDE_AI_BKUP));
+    const staticAt = config.rules.findIndex((rule) => rule.startsWith("RULE-SET,StaticResources,"));
+    for (const rule of [
+        "DOMAIN,cdn.openai.com,AI服务",
+        "DOMAIN,fonts.googleapis.com,谷歌服务",
+        "DOMAIN-SUFFIX,googleusercontent.com,谷歌服务",
+        "DOMAIN,aicode.googleapis.com,AI服务",
+    ]) {
+        const index = config.rules.indexOf(rule);
+        assert.ok(index >= 0 && index < staticAt, `${file}: ${rule} 未在通用静态规则前生效`);
     }
 
     // ── 场景 1b：存在实测干净节点时，AI故障转移 与 Google故障转移 均将其置顶 ──

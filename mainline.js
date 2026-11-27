@@ -334,6 +334,79 @@ https://github.com/powerfullz/override-rules
     }
   });
 
+  // src/node_parser.ts
+  function parseLowCost(nodes) {
+    return (nodes || []).filter((proxy) => LOW_COST_NODE_MATCHER.regex.test(proxy.name || ""));
+  }
+  function parseBkupNodes(nodes) {
+    const bkupNodes = [];
+    const activeNodes = [];
+    for (const node of nodes || []) {
+      if (node.name && /bkup/i.test(node.name)) {
+        if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
+          bkupNodes.push(node);
+        }
+      } else {
+        activeNodes.push(node);
+      }
+    }
+    return { bkupNodes, activeNodes };
+  }
+  function parseNodesByLanding(nodes) {
+    const landingNodes = [];
+    const nonLandingNodes = [];
+    for (const node of nodes || []) {
+      const name = node.name;
+      if (!name) continue;
+      if (node["dialer-proxy"] === "前置代理") {
+        landingNodes.push(node);
+      } else {
+        nonLandingNodes.push(node);
+      }
+    }
+    return { landingNodes, nonLandingNodes };
+  }
+  function parseCountries(nodes) {
+    const countryNodes = /* @__PURE__ */ Object.create(null);
+    for (const node of nodes) {
+      const name = node.name || "";
+      for (const [country, regex] of Object.entries(COUNTRY_REGEX_MAP)) {
+        if (!regex.test(name)) continue;
+        if (COUNTRY_EXCLUDE_MAP[country]?.test(name)) continue;
+        if (!countryNodes[country]) {
+          countryNodes[country] = [];
+        }
+        countryNodes[country].push(node);
+        break;
+      }
+    }
+    return countryNodes;
+  }
+  function getActiveCountryNames(countryNodes, minCount) {
+    const filtered = Object.entries(countryNodes).filter(([, nodes]) => nodes.length >= minCount);
+    filtered.sort(([a], [b]) => {
+      const wa = countriesMeta[a]?.weight ?? Infinity;
+      const wb = countriesMeta[b]?.weight ?? Infinity;
+      return wa - wb;
+    });
+    return filtered.map(([country]) => country);
+  }
+  var COUNTRY_REGEX_MAP, COUNTRY_EXCLUDE_MAP;
+  var init_node_parser = __esm({
+    "src/node_parser.ts"() {
+      "use strict";
+      init_constants();
+      COUNTRY_REGEX_MAP = Object.fromEntries(
+        Object.entries(countriesMeta).map(([country, meta]) => {
+          return [country, new RegExp(meta.pattern.replace(/^\(\?i\)/, ""))];
+        })
+      );
+      COUNTRY_EXCLUDE_MAP = Object.fromEntries(
+        Object.entries(countriesMeta).filter(([, meta]) => meta.excludePattern).map(([country, meta]) => [country, new RegExp(meta.excludePattern)])
+      );
+    }
+  });
+
   // src/proxy_groups.ts
   function buildGroupByType({
     name,
@@ -400,13 +473,15 @@ https://github.com/powerfullz/override-rules
       "法国",
       "澳大利亚"
     ];
+    const bkupCountries = parseCountries(bkupNodes);
     const aiRawSafeProxies = [
       ...aiPreferredCountries.flatMap(
         (country) => (countryNodes[country] || []).map((node) => node.name)
       ),
-      // bkup 是独立池（parseBkupNodes 已从 activeNodes 移出），原先经 BKUP 组间接可达；
-      // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
-      ...bkupNodes.map((node) => node.name)
+      // Apply the same country policy to backup leaves without affecting the ordinary bkup group.
+      ...aiPreferredCountries.flatMap(
+        (country) => (bkupCountries[country] || []).map((node) => node.name)
+      )
     ].filter(isNotNull).filter((name) => !isAiGoogleExcludedNode(name)).filter((name, idx, arr) => arr.indexOf(name) === idx);
     const aiSafeSet = new Set(aiRawSafeProxies);
     const verifiedFirst = AI_GOOGLE_PREFERRED_NODE_NAMES.filter((name) => aiSafeSet.has(name));
@@ -713,80 +788,8 @@ https://github.com/powerfullz/override-rules
       "use strict";
       init_constants();
       init_node_policy();
+      init_node_parser();
       init_utils();
-    }
-  });
-
-  // src/node_parser.ts
-  function parseLowCost(nodes) {
-    return (nodes || []).filter((proxy) => LOW_COST_NODE_MATCHER.regex.test(proxy.name || ""));
-  }
-  function parseBkupNodes(nodes) {
-    const bkupNodes = [];
-    const activeNodes = [];
-    for (const node of nodes || []) {
-      if (node.name && /bkup/i.test(node.name)) {
-        if (!COUNTRY_REGEX_MAP["香港"].test(node.name)) {
-          bkupNodes.push(node);
-        }
-      } else {
-        activeNodes.push(node);
-      }
-    }
-    return { bkupNodes, activeNodes };
-  }
-  function parseNodesByLanding(nodes) {
-    const landingNodes = [];
-    const nonLandingNodes = [];
-    for (const node of nodes || []) {
-      const name = node.name;
-      if (!name) continue;
-      if (node["dialer-proxy"] === "前置代理") {
-        landingNodes.push(node);
-      } else {
-        nonLandingNodes.push(node);
-      }
-    }
-    return { landingNodes, nonLandingNodes };
-  }
-  function parseCountries(nodes) {
-    const countryNodes = /* @__PURE__ */ Object.create(null);
-    for (const node of nodes) {
-      const name = node.name || "";
-      for (const [country, regex] of Object.entries(COUNTRY_REGEX_MAP)) {
-        if (!regex.test(name)) continue;
-        if (COUNTRY_EXCLUDE_MAP[country]?.test(name)) continue;
-        if (!countryNodes[country]) {
-          countryNodes[country] = [];
-        }
-        countryNodes[country].push(node);
-        break;
-      }
-    }
-    return countryNodes;
-  }
-  function getActiveCountryNames(countryNodes, minCount) {
-    const filtered = Object.entries(countryNodes).filter(([, nodes]) => nodes.length >= minCount);
-    filtered.sort(([a], [b]) => {
-      const wa = countriesMeta[a]?.weight ?? Infinity;
-      const wb = countriesMeta[b]?.weight ?? Infinity;
-      return wa - wb;
-    });
-    return filtered.map(([country]) => country);
-  }
-  var COUNTRY_REGEX_MAP, COUNTRY_EXCLUDE_MAP;
-  var init_node_parser = __esm({
-    "src/node_parser.ts"() {
-      "use strict";
-      init_constants();
-      COUNTRY_REGEX_MAP = Object.fromEntries(
-        Object.entries(countriesMeta).map(([country, meta]) => {
-          return [country, new RegExp(meta.pattern.replace(/^\(\?i\)/, ""))];
-        })
-      );
-      COUNTRY_EXCLUDE_MAP = Object.fromEntries(
-        Object.entries(countriesMeta).filter(([, meta]) => meta.excludePattern).map(([country, meta]) => [country, new RegExp(meta.excludePattern)])
-      );
     }
   });
 
@@ -816,6 +819,18 @@ https://github.com/powerfullz/override-rules
         `RULE-SET,zer0direct,DIRECT`,
         `RULE-SET,ADBlock,${PROXY_GROUPS.AD_BLOCK}`,
         `RULE-SET,AdditionalFilter,${PROXY_GROUPS.AD_BLOCK}`,
+        // Narrow exceptions for service-owned assets also matched by generic CDN rules.
+        `DOMAIN,cdn.openai.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,status.claude.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,a-cdn.anthropic.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,aicode.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,cloudcode-pa.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,daily-cloudcode-pa.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN,generativelanguage.googleapis.com,${PROXY_GROUPS.AI_SERVICE}`,
+        `DOMAIN-SUFFIX,googleusercontent.com,${PROXY_GROUPS.GOOGLE}`,
+        ...["ajax", "fonts", "chart", "safebrowsing"].map(
+          (service) => `DOMAIN,${service}.googleapis.com,${PROXY_GROUPS.GOOGLE}`
+        ),
         `RULE-SET,StaticResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,CDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
         `RULE-SET,AdditionalCDNResources,${PROXY_GROUPS.STATIC_RESOURCES}`,
