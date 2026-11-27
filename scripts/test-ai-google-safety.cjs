@@ -7,10 +7,13 @@ const vm = require("node:vm");
 // 只用合成节点名做输入，不含任何真实订阅凭据。
 
 const BAD = "LXY-🇺🇸美国01|流媒体|0.1x";
-const SAFE_US = "LXY-🇺🇸美国02|流媒体|0.1x";
+const BAD_LA = "LXY-🇺🇸美国洛杉矶01|流媒体|0.01x";
+const BAD_SG_HS = "LXY-🇸🇬新加坡高速02|BGP|CTCUCM";
+const SAFE_US = "测试-🇺🇸美国干净01";
 const SAFE_US_BKUP = "LXYbkup-🇺🇸美国03|BGP|CTCUCM";
 const SAFE_SG = "LXY-🇸🇬新加坡01|流媒体|0.1x";
 const SAFE_JP = "花云-🇯🇵 日本标准 IEPL 专线 1";
+const VERIFIED_SG = "LXY-🇸🇬新加坡专线01|BGP|流媒体";
 
 function mk(name, extra = {}) {
     return { name, type: "ss", server: "203.0.113.10", port: 443, ...extra };
@@ -67,6 +70,8 @@ for (const file of files) {
     // ── 场景 1：坏节点与健康节点并存 ─────────────────────────────────────
     const config = render(file, [
         mk(BAD),
+        mk(BAD_LA),
+        mk(BAD_SG_HS),
         mk(SAFE_US),
         mk(SAFE_SG),
         mk(SAFE_JP),
@@ -77,7 +82,9 @@ for (const file of files) {
 
     for (const entry of ["AI服务", "谷歌服务"]) {
         const leaves = reachableLeaves(config, entry);
-        assert.ok(!leaves.has(BAD), `${file}: ${entry} 仍可达已知送中节点`);
+        for (const badNode of [BAD, BAD_LA, BAD_SG_HS]) {
+            assert.ok(!leaves.has(badNode), `${file}: ${entry} 仍可达已知送中节点 ${badNode}`);
+        }
         // 除 REJECT 外，所有可达叶子都必须是具体节点（不得出现 DIRECT）
         assert.ok(!leaves.has("DIRECT"), `${file}: ${entry} 可达 DIRECT`);
         assert.ok(leaves.size > 1, `${file}: ${entry} 安全池过小，测试样本不足`);
@@ -122,6 +129,25 @@ for (const file of files) {
     for (const entry of ["选择代理", "手动选择", "故障转移", "GLOBAL"]) {
         assert.ok(reachableLeaves(config, entry).has(BAD), `${file}: ${entry} 不再可达坏节点`);
     }
+
+    // ── 场景 1b：存在实测干净节点时，AI故障转移 与 Google故障转移 均将其置顶 ──
+    const withVerified = render(file, [
+        mk(BAD),
+        mk(BAD_LA),
+        mk(SAFE_US),
+        mk(VERIFIED_SG),
+        mk(SAFE_JP),
+    ]);
+    assert.equal(
+        group(withVerified, "AI故障转移").proxies[0],
+        VERIFIED_SG,
+        `${file}: AI故障转移 未把实测干净节点置顶`
+    );
+    assert.equal(
+        group(withVerified, "Google故障转移").proxies[0],
+        VERIFIED_SG,
+        `${file}: Google故障转移 未把实测干净节点置顶`
+    );
 
     // ── 场景 2：安全池全空 → fail closed ────────────────────────────────
     const onlyBad = render(file, [mk(BAD), mk("花云-🇭🇰 香港标准 IEPL 专线 1")]);

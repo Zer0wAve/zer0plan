@@ -251,13 +251,27 @@ https://github.com/powerfullz/override-rules
   function isKnownGeoipCnNode(name) {
     return Boolean(name && KNOWN_GEOIP_CN_SET.has(name.trim()));
   }
-  var KNOWN_GEOIP_CN_NODES, KNOWN_GEOIP_CN_SET;
+  var KNOWN_GEOIP_CN_NODES, AI_GOOGLE_VERIFIED_PREFERRED_NODES, KNOWN_GEOIP_CN_SET;
   var init_node_policy = __esm({
     "src/node_policy.ts"() {
       "use strict";
       KNOWN_GEOIP_CN_NODES = [
         // 2026-11-27：Gemini/aicode 报 LOCATION_NOT_ELIGIBLE、detected_location=CN。
-        "LXY-🇺🇸美国01|流媒体|0.1x"
+        "LXY-🇺🇸美国01|流媒体|0.1x",
+        "LXY-🇺🇸美国洛杉矶01|流媒体|0.01x",
+        // 2026-11-27 隔离串行实测：notebooklm 返回 location=unsupported，且 google.com/searchdomaincheck 跳转 hkredirect（或 000）。
+        "LXY-🇺🇸美国洛杉矶02|流媒体|0.01x",
+        "LXY-🇺🇸美国02|流媒体|0.1x",
+        "LXY-🇺🇸美国03|流媒体|0.1x",
+        "LXY-🇺🇸美国04|流媒体|0.1x",
+        "LXY-🇺🇸美国05|流媒体|0.1x",
+        "LXY-🇸🇬新加坡高速02|BGP|CTCUCM",
+        "LXY-🇸🇬新加坡高速04|BGP|CTCUCM",
+        "LXY-🇬🇧英国伦敦01|流媒体|0.1x"
+      ];
+      AI_GOOGLE_VERIFIED_PREFERRED_NODES = [
+        "LXY-🇸🇬新加坡专线01|BGP|流媒体",
+        "LXY-🇯🇵日本专线01|BGP|流媒体"
       ];
       KNOWN_GEOIP_CN_SET = new Set(KNOWN_GEOIP_CN_NODES.map((name) => name.trim()));
     }
@@ -329,7 +343,7 @@ https://github.com/powerfullz/override-rules
       "法国",
       "澳大利亚"
     ];
-    const aiSafeProxies = [
+    const aiRawSafeProxies = [
       ...aiPreferredCountries.flatMap(
         (country) => (countryNodes[country] || []).map((node) => node.name)
       ),
@@ -337,8 +351,17 @@ https://github.com/powerfullz/override-rules
       // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
       ...bkupNodes.map((node) => node.name)
     ].filter(isNotNull).filter((name) => !isKnownGeoipCnNode(name)).filter((name, idx, arr) => arr.indexOf(name) === idx);
+    const aiSafeSet = new Set(aiRawSafeProxies);
+    const verifiedFirst = AI_GOOGLE_VERIFIED_PREFERRED_NODES.filter((name) => aiSafeSet.has(name));
+    const dedicatedNext = aiRawSafeProxies.filter(
+      (name) => name.includes("专线") && !verifiedFirst.includes(name)
+    );
+    const remainingSafe = aiRawSafeProxies.filter(
+      (name) => !verifiedFirst.includes(name) && !dedicatedNext.includes(name)
+    );
+    const aiSafeProxies = [...verifiedFirst, ...dedicatedNext, ...remainingSafe];
     const aiSafeMembers = aiSafeProxies.length > 0 ? aiSafeProxies : [REJECT_TARGET];
-    const googleSafeProxies = [
+    const googleSafeProxies = verifiedFirst.length > 0 ? aiSafeProxies : [
       ...aiSafeProxies.filter(
         (name) => (countryNodes["美国"] || []).some((n) => n.name === name)
       ),

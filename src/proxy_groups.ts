@@ -7,7 +7,7 @@ import {
     REJECT_TARGET,
     countriesMeta,
 } from "./constants";
-import { isKnownGeoipCnNode } from "./node_policy";
+import { AI_GOOGLE_VERIFIED_PREFERRED_NODES, isKnownGeoipCnNode } from "./node_policy";
 import type { BuildProxyGroupsInput, GroupType, ProxyGroup, ProxyNode } from "./types";
 import { isNotNull } from "./utils";
 
@@ -91,7 +91,7 @@ export function buildProxyGroups({
     ];
 
     // 已知送中节点对 AI/Google 不可用，但仍保留在 proxies 和普通组里。
-    const aiSafeProxies = [
+    const aiRawSafeProxies = [
         ...aiPreferredCountries.flatMap((country) =>
             (countryNodes[country] || []).map((node) => node.name)
         ),
@@ -103,19 +103,34 @@ export function buildProxyGroups({
         .filter((name) => !isKnownGeoipCnNode(name))
         .filter((name, idx, arr) => arr.indexOf(name) === idx);
 
+    // 实测干净的优先节点置顶（再按专线优先、最后其余安全池节点），
+    // 避免 fallback 顺序先落到死节点或未测低倍率节点。
+    const aiSafeSet = new Set(aiRawSafeProxies);
+    const verifiedFirst = AI_GOOGLE_VERIFIED_PREFERRED_NODES.filter((name) => aiSafeSet.has(name));
+    const dedicatedNext = aiRawSafeProxies.filter(
+        (name) => name.includes("专线") && !verifiedFirst.includes(name)
+    );
+    const remainingSafe = aiRawSafeProxies.filter(
+        (name) => !verifiedFirst.includes(name) && !dedicatedNext.includes(name)
+    );
+    const aiSafeProxies = [...verifiedFirst, ...dedicatedNext, ...remainingSafe];
+
     // 安全池为空时 fail closed：REJECT，绝不回落到通用地区组、选择代理或 DIRECT。
     const aiSafeMembers = aiSafeProxies.length > 0 ? aiSafeProxies : [REJECT_TARGET];
 
-    // Google 默认仍优先美国（避免台湾/香港 GeoIP 漂移导致账号送港），但只在美国
-    // 安全节点里挑；美国无安全节点时按安全池顺序。
-    const googleSafeProxies = [
-        ...aiSafeProxies.filter((name) =>
-            (countryNodes["美国"] || []).some((n) => n.name === name)
-        ),
-        ...aiSafeProxies.filter(
-            (name) => !(countryNodes["美国"] || []).some((n) => n.name === name)
-        ),
-    ];
+    // Google 默认先走实测干净的优先节点（与 AI 共享同一安全池），
+    // 若订阅里不含已测优先节点，则维持美国安全节点优先。
+    const googleSafeProxies =
+        verifiedFirst.length > 0
+            ? aiSafeProxies
+            : [
+                  ...aiSafeProxies.filter((name) =>
+                      (countryNodes["美国"] || []).some((n) => n.name === name)
+                  ),
+                  ...aiSafeProxies.filter(
+                      (name) => !(countryNodes["美国"] || []).some((n) => n.name === name)
+                  ),
+              ];
 
     // Telegram 组 = fallback，成员是具体节点（按国家优先级展开），最后兜底 故障转移。
     // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
