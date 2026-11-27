@@ -7,7 +7,7 @@ import {
     REJECT_TARGET,
     countriesMeta,
 } from "./constants";
-import { AI_GOOGLE_VERIFIED_PREFERRED_NODES, isKnownGeoipCnNode } from "./node_policy";
+import { AI_GOOGLE_PREFERRED_NODE_NAMES, isAiGoogleExcludedNode } from "./node_policy";
 import type { BuildProxyGroupsInput, GroupType, ProxyGroup, ProxyNode } from "./types";
 import { isNotNull } from "./utils";
 
@@ -75,7 +75,7 @@ export function buildProxyGroups({
     const hasBkup = bkupNodes.length > 0;
 
     // AI 与 Google 共用的安全出口池：只放具体节点，绝不嵌地区组/低倍率组/故障转移/
-    // 选择代理——那些组会把已知送中节点重新带回来（美国01 就是这么被选中的）。
+    // 选择代理——那些组会把已登记风险节点重新带回来（美国01 就是这么被选中的）。
     // 仅列入 OpenAI、Anthropic 与 Gemini API 当前均明确支持的保守地区。
     // 故意排除香港、台湾、俄罗斯与 DIRECT，避免 AI 服务触发地区限制或出口漂移。
     const aiPreferredCountries = [
@@ -90,7 +90,8 @@ export function buildProxyGroups({
         "澳大利亚",
     ];
 
-    // 已知送中节点对 AI/Google 不可用，但仍保留在 proxies 和普通组里。
+    // 已登记风险节点（确证 CN 或 AI/Google 旁证，见 node_policy）对 AI/Google 不可用，
+    // 但仍保留在 proxies 和普通组里。
     const aiRawSafeProxies = [
         ...aiPreferredCountries.flatMap((country) =>
             (countryNodes[country] || []).map((node) => node.name)
@@ -100,13 +101,13 @@ export function buildProxyGroups({
         ...bkupNodes.map((node) => node.name),
     ]
         .filter(isNotNull)
-        .filter((name) => !isKnownGeoipCnNode(name))
+        .filter((name) => !isAiGoogleExcludedNode(name))
         .filter((name, idx, arr) => arr.indexOf(name) === idx);
 
-    // 实测干净的优先节点置顶（再按专线优先、最后其余安全池节点），
-    // 避免 fallback 顺序先落到死节点或未测低倍率节点。
+    // 优先节点置顶（SG 已用真实模型验证，JP 仅匿名网页探测；见 node_policy），
+    // 再按专线优先、最后其余安全池节点，避免 fallback 先落到死节点或未测低倍率节点。
     const aiSafeSet = new Set(aiRawSafeProxies);
-    const verifiedFirst = AI_GOOGLE_VERIFIED_PREFERRED_NODES.filter((name) => aiSafeSet.has(name));
+    const verifiedFirst = AI_GOOGLE_PREFERRED_NODE_NAMES.filter((name) => aiSafeSet.has(name));
     const dedicatedNext = aiRawSafeProxies.filter(
         (name) => name.includes("专线") && !verifiedFirst.includes(name)
     );
@@ -118,8 +119,8 @@ export function buildProxyGroups({
     // 安全池为空时 fail closed：REJECT，绝不回落到通用地区组、选择代理或 DIRECT。
     const aiSafeMembers = aiSafeProxies.length > 0 ? aiSafeProxies : [REJECT_TARGET];
 
-    // Google 默认先走实测干净的优先节点（与 AI 共享同一安全池），
-    // 若订阅里不含已测优先节点，则维持美国安全节点优先。
+    // Google 默认先走优先节点（与 AI 共享同一安全池、同一证据分级），
+    // 若订阅里不含优先节点，则维持美国安全节点优先。
     const googleSafeProxies =
         verifiedFirst.length > 0
             ? aiSafeProxies
@@ -453,8 +454,8 @@ export function buildProxyGroups({
             type: "select",
             proxies: [PROXY_GROUPS.SELECT, "DIRECT"],
         },
-        // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（美国优先），
-        // 不再嵌 bkup 组——嵌套组会绕开已知送中排除。
+        // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（优先节点置顶），
+        // 不再嵌 bkup 组——嵌套组会绕开已登记风险节点的排除。
         {
             name: PROXY_GROUPS.AI_FALLBACK,
             icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
@@ -465,7 +466,7 @@ export function buildProxyGroups({
             tolerance: 20,
             lazy: true,
         },
-        // Google故障转移：与 AI 同一安全池（美国优先），健康检查打 Google 自身端点，
+        // Google故障转移：与 AI 同一安全池（优先节点置顶），健康检查打 Google 自身端点，
         // 避免 select 默认停在已失效的节点上。
         {
             name: PROXY_GROUPS.GOOGLE_FALLBACK,

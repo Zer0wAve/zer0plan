@@ -248,32 +248,89 @@ https://github.com/powerfullz/override-rules
   });
 
   // src/node_policy.ts
-  function isKnownGeoipCnNode(name) {
-    return Boolean(name && KNOWN_GEOIP_CN_SET.has(name.trim()));
+  function isAiGoogleExcludedNode(name) {
+    return Boolean(name && EXCLUDED_SET.has(name.trim()));
   }
-  var KNOWN_GEOIP_CN_NODES, AI_GOOGLE_VERIFIED_PREFERRED_NODES, KNOWN_GEOIP_CN_SET;
+  var AI_GOOGLE_EXCLUDED_NODES, GEOIP_CN_CONFIRMED_NODES, AI_GOOGLE_SYMPTOM_PRECAUTION_NODES, AI_GOOGLE_PREFERRED_NODES, AI_GOOGLE_PREFERRED_NODE_NAMES, EXCLUDED_SET;
   var init_node_policy = __esm({
     "src/node_policy.ts"() {
       "use strict";
-      KNOWN_GEOIP_CN_NODES = [
-        // 2026-11-27：Gemini/aicode 报 LOCATION_NOT_ELIGIBLE、detected_location=CN。
-        "LXY-🇺🇸美国01|流媒体|0.1x",
-        "LXY-🇺🇸美国洛杉矶01|流媒体|0.01x",
-        // 2026-11-27 隔离串行实测：notebooklm 返回 location=unsupported，且 google.com/searchdomaincheck 跳转 hkredirect（或 000）。
-        "LXY-🇺🇸美国洛杉矶02|流媒体|0.01x",
-        "LXY-🇺🇸美国02|流媒体|0.1x",
-        "LXY-🇺🇸美国03|流媒体|0.1x",
-        "LXY-🇺🇸美国04|流媒体|0.1x",
-        "LXY-🇺🇸美国05|流媒体|0.1x",
-        "LXY-🇸🇬新加坡高速02|BGP|CTCUCM",
-        "LXY-🇸🇬新加坡高速04|BGP|CTCUCM",
-        "LXY-🇬🇧英国伦敦01|流媒体|0.1x"
+      AI_GOOGLE_EXCLUDED_NODES = [
+        {
+          name: "LXY-🇺🇸美国01|流媒体|0.1x",
+          risk: "geoip-cn-confirmed",
+          evidence: "2026-11-27 aicode.googleapis.com 返回 LOCATION_NOT_ELIGIBLE + Detected location: CN；mihomo 实际链路命中本节点"
+        },
+        {
+          name: "LXY-🇺🇸美国洛杉矶01|流媒体|0.01x",
+          risk: "geoip-cn-confirmed",
+          evidence: "2026-11-27 AI故障转移 落到本节点后 aicode 复现 Detected location: CN（路由/日志关联）"
+        },
+        // 以下 8 个只有产品侧旁证：notebooklm location=unsupported、searchdomaincheck
+        // 跳 hkredirect（或 000）、超时。没有 CN 判定，按 precaution 排除。
+        {
+          name: "LXY-🇺🇸美国洛杉矶02|流媒体|0.01x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect/000"
+        },
+        {
+          name: "LXY-🇺🇸美国02|流媒体|0.1x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect"
+        },
+        {
+          name: "LXY-🇺🇸美国03|流媒体|0.1x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect"
+        },
+        {
+          name: "LXY-🇺🇸美国04|流媒体|0.1x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect"
+        },
+        {
+          name: "LXY-🇺🇸美国05|流媒体|0.1x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect"
+        },
+        {
+          name: "LXY-🇸🇬新加坡高速02|BGP|CTCUCM",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect/超时"
+        },
+        {
+          name: "LXY-🇸🇬新加坡高速04|BGP|CTCUCM",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect/超时"
+        },
+        {
+          name: "LXY-🇬🇧英国伦敦01|流媒体|0.1x",
+          risk: "ai-google-symptom-precaution",
+          evidence: "notebooklm location=unsupported；searchdomaincheck hkredirect/000"
+        }
       ];
-      AI_GOOGLE_VERIFIED_PREFERRED_NODES = [
-        "LXY-🇸🇬新加坡专线01|BGP|流媒体",
-        "LXY-🇯🇵日本专线01|BGP|流媒体"
+      GEOIP_CN_CONFIRMED_NODES = AI_GOOGLE_EXCLUDED_NODES.filter(
+        (node) => node.risk === "geoip-cn-confirmed"
+      ).map((node) => node.name);
+      AI_GOOGLE_SYMPTOM_PRECAUTION_NODES = AI_GOOGLE_EXCLUDED_NODES.filter(
+        (node) => node.risk === "ai-google-symptom-precaution"
+      ).map((node) => node.name);
+      AI_GOOGLE_PREFERRED_NODES = [
+        {
+          name: "LXY-🇸🇬新加坡专线01|BGP|流媒体",
+          verification: "real-model-verified",
+          evidence: "2026-11-27 NAS 自动故障转移下 agy-cli/gemini-4-neon HTTP 200 正常出文；notebooklm 301→notebook.google.com、searchdomaincheck 200=.google.com"
+        },
+        {
+          name: "LXY-🇯🇵日本专线01|BGP|流媒体",
+          verification: "anonymous-web-probe-only",
+          evidence: "2026-11-27 仅匿名网页探测（notebooklm 重定向、searchdomaincheck 200）；未做真实模型出文验证"
+        }
       ];
-      KNOWN_GEOIP_CN_SET = new Set(KNOWN_GEOIP_CN_NODES.map((name) => name.trim()));
+      AI_GOOGLE_PREFERRED_NODE_NAMES = AI_GOOGLE_PREFERRED_NODES.map(
+        (node) => node.name
+      );
+      EXCLUDED_SET = new Set(AI_GOOGLE_EXCLUDED_NODES.map((node) => node.name.trim()));
     }
   });
 
@@ -350,9 +407,9 @@ https://github.com/powerfullz/override-rules
       // bkup 是独立池（parseBkupNodes 已从 activeNodes 移出），原先经 BKUP 组间接可达；
       // 这里改成具体节点纳入同一安全池，避免再出现「组嵌套绕过排除」。
       ...bkupNodes.map((node) => node.name)
-    ].filter(isNotNull).filter((name) => !isKnownGeoipCnNode(name)).filter((name, idx, arr) => arr.indexOf(name) === idx);
+    ].filter(isNotNull).filter((name) => !isAiGoogleExcludedNode(name)).filter((name, idx, arr) => arr.indexOf(name) === idx);
     const aiSafeSet = new Set(aiRawSafeProxies);
-    const verifiedFirst = AI_GOOGLE_VERIFIED_PREFERRED_NODES.filter((name) => aiSafeSet.has(name));
+    const verifiedFirst = AI_GOOGLE_PREFERRED_NODE_NAMES.filter((name) => aiSafeSet.has(name));
     const dedicatedNext = aiRawSafeProxies.filter(
       (name) => name.includes("专线") && !verifiedFirst.includes(name)
     );
@@ -624,8 +681,8 @@ https://github.com/powerfullz/override-rules
         type: "select",
         proxies: [PROXY_GROUPS.SELECT, "DIRECT"]
       },
-      // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（美国优先），
-      // 不再嵌 bkup 组——嵌套组会绕开已知送中排除。
+      // AI故障转移固定放在所有策略组最后；成员是同一安全池的具体节点（优先节点置顶），
+      // 不再嵌 bkup 组——嵌套组会绕开已登记风险节点的排除。
       {
         name: PROXY_GROUPS.AI_FALLBACK,
         icon: `${CDN_URL}/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png`,
@@ -636,7 +693,7 @@ https://github.com/powerfullz/override-rules
         tolerance: 20,
         lazy: true
       },
-      // Google故障转移：与 AI 同一安全池（美国优先），健康检查打 Google 自身端点，
+      // Google故障转移：与 AI 同一安全池（优先节点置顶），健康检查打 Google 自身端点，
       // 避免 select 默认停在已失效的节点上。
       {
         name: PROXY_GROUPS.GOOGLE_FALLBACK,

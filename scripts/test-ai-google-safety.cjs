@@ -170,7 +170,37 @@ for (const file of files) {
     }
 }
 
+// ── 证据标签回归：区分「确证 CN」与「产品旁证预防」，并核对专线验证等级 ──
+const policySrc = fs.readFileSync("src/node_policy.ts", "utf8");
+const countRisk = (risk) => (policySrc.match(new RegExp(`risk: "${risk}"`, "g")) || []).length;
+assert.equal(
+    countRisk("geoip-cn-confirmed"),
+    2,
+    "确证 CN 条目数变了：只有拿到 aicode CN 判定 + 链路关联才能加"
+);
+assert.equal(
+    countRisk("ai-google-symptom-precaution"),
+    8,
+    "旁证预防条目数变了：NotebookLM/搜索旁证不得升级为确证 CN"
+);
+assert.match(
+    policySrc,
+    /新加坡专线01[^\n]*\n\s*verification: "real-model-verified"/,
+    "SG 专线应标注真实模型验证"
+);
+assert.match(
+    policySrc,
+    /日本专线01[^\n]*\n\s*verification: "anonymous-web-probe-only"/,
+    "JP 专线只有匿名网页探测，不得标成真实模型验证"
+);
+for (const file of files) {
+    const src = fs.readFileSync(file, "utf8");
+    assert.ok(src.includes("geoip-cn-confirmed"), `${file}: 产物缺少确证 CN 标签`);
+    assert.ok(src.includes("ai-google-symptom-precaution"), `${file}: 产物缺少旁证分级标签`);
+}
+
 console.log(
-    "PASS: AI服务/谷歌服务 嵌套可达叶子均排除已知送中节点（含默认入口与故障转移）；" +
-        "普通入口仍可达该节点；安全池为空时 fail closed 到 REJECT"
+    "PASS: AI服务/谷歌服务 嵌套可达叶子均排除已登记风险节点（含默认入口与故障转移）；" +
+        "普通入口仍可达该节点；安全池为空时 fail closed 到 REJECT；" +
+        "证据分级 2 确证 CN + 8 旁证预防，SG 真实模型 / JP 匿名网页标签正确"
 );
