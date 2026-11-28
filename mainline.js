@@ -501,30 +501,31 @@ https://github.com/powerfullz/override-rules
         (name) => !(countryNodes["美国"] || []).some((n) => n.name === name)
       )
     ];
-    const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
+    const telegramPreferredCountries = ["新加坡", "日本", "香港", "美国", "台湾"];
     const TELEGRAM_MEASURED_ORDER = [
-      // 2026-11-08 16:2x 重测（每节点 8 轮，探针 https://api.telegram.org/bot）。
-      // 探针换成 /bot 的原因见下面 Telegram 组定义处的注释：原探针现在 302，状态码对不上。
-      "花云-🇭🇰 香港标准 IEPL 专线 1",
-      "花云-🇭🇰 香港标准 IEPL 专线 7",
-      "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速05|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速04|BGP|CTCUCM",
-      "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
-      "花云-🇯🇵 日本标准 IEPL 专线 1",
-      "花云-🇯🇵 日本高级 IEPL 专线 2",
-      "花云-🇭🇰 香港标准 IEPL 专线 5",
-      "花云-🇭🇰 香港标准 IEPL 专线 2",
-      "花云-🇭🇰 香港标准 IEPL 专线 6",
-      "花云-🇭🇰 香港标准 IEPL 专线 4",
-      "花云-🇭🇰 香港高级 IEPL 专线 1",
-      "花云-🇯🇵 日本高级 IEPL 专线 3",
-      "花云-🇭🇰 香港高级 IEPL 专线 3",
-      "花云-🇭🇰 香港高级 IEPL 专线 2",
-      "花云-🇭🇰 香港标准 IEPL 专线 3",
-      "花云-🇭🇰 香港标准 IEPL 专线 8",
-      "花云-🇯🇵 日本高级 IEPL 专线 1"
+      // 2026-11-28 全池实测（每节点 6 轮）：以下 20 个节点 6/6 全通，按中位延迟升序。
+      // 上一版名单是花云/LXYbkup 时代的，切到 LXY 后命中 0/20，才会退化成按国家取前 20
+      // 把 12 个死点（HK 住宅 IP、HK 高速01/02、JP CTCU）装进组里。
+      "LXY-🇸🇬新加坡专线01|BGP|流媒体",
+      "LXY-🇸🇬新加坡专线04|BGP|流媒体",
+      "LXY-🇸🇬新加坡专线03|BGP|流媒体",
+      "LXY-🇸🇬新加坡专线02|BGP|流媒体",
+      "LXY-🇸🇬新加坡高速01|BGP|CTCUCM",
+      "LXY-🇸🇬新加坡高速02|BGP|CTCUCM",
+      "LXY-🇸🇬新加坡高速05|BGP|CTCUCM",
+      "LXY-🇸🇬新加坡高速03|BGP|CTCUCM",
+      "LXY-🇸🇬新加坡高速04|BGP|CTCUCM",
+      "LXY-🇯🇵日本专线02|BGP|流媒体",
+      "LXY-🇯🇵日本专线01|BGP|流媒体",
+      "LXY-🇯🇵日本专线04|BGP|流媒体",
+      "LXY-🇯🇵日本专线03|BGP|流媒体",
+      "LXY-🇭🇰香港高速05|BGP|CMCU",
+      "LXY-🇭🇰香港高速04|BGP|CMCU",
+      "LXY-🇭🇰香港高速03|BGP|CMCU",
+      "LXY-🇺🇸美国03|流媒体|0.1x",
+      "LXY-🇯🇵日本高速04|BGP|CUCM",
+      "LXY-🇯🇵日本高速02|BGP|CUCM",
+      "LXY-🇯🇵日本高速01|BGP|CUCM"
     ];
     const isMainPoolNode = (node) => Boolean(node.name?.startsWith("花云-") || node.name?.startsWith("LXY-"));
     const isExperimental = (node) => Boolean(node.name?.includes("实验性"));

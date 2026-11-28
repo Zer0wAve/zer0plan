@@ -140,41 +140,44 @@ export function buildProxyGroups({
     // 绝不把 SELECT/竞速组放在首位：select 组永远不会“健康检查失败”，会导致 fallback
     // 永远卡在竞速选出的坏节点上（曾实测卡大半天，Telegram 消息发不出）。
     // 具体节点命中→持续使用（不打断 MTProto 长连接）；全失效→经 故障转移(含 bkup) 逃生。
-    const telegramPreferredCountries = ["香港", "日本", "台湾", "美国", "新加坡"];
+    // 2026-11-28：订阅主力从花云换成 LXY 后，HK 住宅 IP / HK 高速01·02 / JP CTCU 全线阵亡，
+    // 新加坡（BGP 专线+高速）是唯一 6/6 全通的整片，故新加坡提到第一位。
+    const telegramPreferredCountries = ["新加坡", "日本", "香港", "美国", "台湾"];
 
-    // ── 实测优先顺序（2026-10-30 首版）────────────────────────────────────────
+    // ── 实测优先顺序（2026-11-28 全池重测版）──────────────────────────────────
     // fallback 只取**第一个健康节点**，所以顺序就是体验：排在前面 = 一直在用。
-    // 这份名单是拿 api.telegram.org 逐节点实测出来的（每节点 6 轮，成功率优先、
+    // 这份名单是拿 api.telegram.org/bot 逐节点实测出来的（每节点 6 轮，成功率优先、
     // 同为成功再比中位延迟），不是按名字猜的。刷新方法：
-    //     python3 ~/.hermes/scripts/telegram_rank_members.py --rounds 6
+    //     python3 ~/.hermes/scripts/telegram_rank_members.py --rounds 6 --all-candidates
     // 把输出的 TELEGRAM_MEASURED_ORDER 整段替换到这里，然后 build → push →
-    // purge jsDelivr → POST /api/sync/artifacts → mihomo-update.sh。
+    // purge jsDelivr → mihomo-update.sh（WSL 直接拉 desktop_noflw，不再用 /api/sync/artifacts）。
     // 名单里没有的节点不会丢：未列出的按下面的原优先级追加在后面（新节点/新线路
     // 先排在队尾，等下一轮重测再往上提）。全 6 轮失败的死点故意不列——
     // 它们排最后也只会占探测预算。
     const TELEGRAM_MEASURED_ORDER = [
-        // 2026-11-08 16:2x 重测（每节点 8 轮，探针 https://api.telegram.org/bot）。
-        // 探针换成 /bot 的原因见下面 Telegram 组定义处的注释：原探针现在 302，状态码对不上。
-        "花云-🇭🇰 香港标准 IEPL 专线 1",
-        "花云-🇭🇰 香港标准 IEPL 专线 7",
-        "LXYbkup-🇸🇬新加坡高速02|BGP|CTCUCM",
-        "LXYbkup-🇸🇬新加坡高速05|BGP|CTCUCM",
-        "LXYbkup-🇸🇬新加坡高速01|BGP|CTCUCM",
-        "LXYbkup-🇸🇬新加坡高速04|BGP|CTCUCM",
-        "LXYbkup-🇸🇬新加坡高速03|BGP|CTCUCM",
-        "花云-🇯🇵 日本标准 IEPL 专线 1",
-        "花云-🇯🇵 日本高级 IEPL 专线 2",
-        "花云-🇭🇰 香港标准 IEPL 专线 5",
-        "花云-🇭🇰 香港标准 IEPL 专线 2",
-        "花云-🇭🇰 香港标准 IEPL 专线 6",
-        "花云-🇭🇰 香港标准 IEPL 专线 4",
-        "花云-🇭🇰 香港高级 IEPL 专线 1",
-        "花云-🇯🇵 日本高级 IEPL 专线 3",
-        "花云-🇭🇰 香港高级 IEPL 专线 3",
-        "花云-🇭🇰 香港高级 IEPL 专线 2",
-        "花云-🇭🇰 香港标准 IEPL 专线 3",
-        "花云-🇭🇰 香港标准 IEPL 专线 8",
-        "花云-🇯🇵 日本高级 IEPL 专线 1",
+        // 2026-11-28 全池实测（每节点 6 轮）：以下 20 个节点 6/6 全通，按中位延迟升序。
+        // 上一版名单是花云/LXYbkup 时代的，切到 LXY 后命中 0/20，才会退化成按国家取前 20
+        // 把 12 个死点（HK 住宅 IP、HK 高速01/02、JP CTCU）装进组里。
+        "LXY-🇸🇬新加坡专线01|BGP|流媒体",
+        "LXY-🇸🇬新加坡专线04|BGP|流媒体",
+        "LXY-🇸🇬新加坡专线03|BGP|流媒体",
+        "LXY-🇸🇬新加坡专线02|BGP|流媒体",
+        "LXY-🇸🇬新加坡高速01|BGP|CTCUCM",
+        "LXY-🇸🇬新加坡高速02|BGP|CTCUCM",
+        "LXY-🇸🇬新加坡高速05|BGP|CTCUCM",
+        "LXY-🇸🇬新加坡高速03|BGP|CTCUCM",
+        "LXY-🇸🇬新加坡高速04|BGP|CTCUCM",
+        "LXY-🇯🇵日本专线02|BGP|流媒体",
+        "LXY-🇯🇵日本专线01|BGP|流媒体",
+        "LXY-🇯🇵日本专线04|BGP|流媒体",
+        "LXY-🇯🇵日本专线03|BGP|流媒体",
+        "LXY-🇭🇰香港高速05|BGP|CMCU",
+        "LXY-🇭🇰香港高速04|BGP|CMCU",
+        "LXY-🇭🇰香港高速03|BGP|CMCU",
+        "LXY-🇺🇸美国03|流媒体|0.1x",
+        "LXY-🇯🇵日本高速04|BGP|CUCM",
+        "LXY-🇯🇵日本高速02|BGP|CUCM",
+        "LXY-🇯🇵日本高速01|BGP|CUCM",
     ];
 
     // 主池节点：兼容旧花云（花云-）与新主用良心云（LXY-）
